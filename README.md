@@ -1,52 +1,71 @@
 # InOrdo
 
-InOrdo helps teams understand what a project change affects before they approve
-it. The product story is intentionally ordered:
+InOrdo is a Work and Productivity application for small teams. It turns an unstructured project update into reviewable evidence, deterministically traces affected work, drafts recovery actions with GPT-5.6, and requires explicit human approval before applying reversible internal changes.
 
-**Evidence -> impact -> proposal -> approval -> history and undo.**
+## Current status
 
-This branch contains a responsive frontend visual shell. It does not implement
-production authentication, tenancy, persistence, OpenAI calls, approvals,
-operations, or undo.
+This repository contains the P0 application foundation, an accessible marketing
+page, and a responsive product-shell preview. The `/demo` workspace uses a
+clearly labeled, typed synthetic fixture; it does not represent an authenticated
+account or live project.
+
+Authentication, persistence, GPT-5.6 extraction, server-side dependency
+traversal, approval mutations, durable history, undo, and production demo reset
+remain planned and are explicitly shown as unconnected.
 
 ## Routes
 
-- `/` — public landing page with the problem, workflow, principles, and an
-  honest demo entry.
-- `/demo` — simulated application shell and synthetic summit dashboard.
-- `/demo/components` — isolated reference for shared component states.
+- `/` — public product story and honest synthetic-demo entry.
+- `/demo` — responsive summit workspace presentation using local fixture data.
+- `/demo/components` — isolated reference for shared interface states.
 
-All demo people, records, dates, and updates are fictional. The visible fixture
-label is part of the acceptance criteria.
+## Local setup
 
-## Local development
-
-Requirements:
-
-- Node.js 22.13 or newer
-- pnpm 11
+Requirements: Node.js 22 and npm.
 
 ```bash
-pnpm install
-pnpm run dev
+npm ci
+copy .env.example .env.local
+npm run dev
 ```
 
-The local application is available at `http://localhost:3000` by default.
+Fill local values in `.env.local`; never commit that file. The application runs at `http://localhost:3000` by default.
 
-## Verification
+## Scripts
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the Next.js development server. |
+| `npm run build` | Create a production build. |
+| `npm run start` | Serve the production build. |
+| `npm run lint` | Run ESLint across the repository. |
+| `npm run typecheck` | Run TypeScript without emitting files. |
+| `npm test` | Run Vitest in watch mode. |
+| `npm run test:run` | Run unit and component tests once. |
+| `npm run test:e2e` | Run Playwright browser tests. |
+
+## Architecture intention
+
+- Next.js App Router and React Server Components provide the web boundary.
+- Supabase will provide Postgres persistence, authentication, RLS, and durable operation history.
+- GPT-5.6 will run server-side only to structure evidence and draft recovery actions.
+- Application code—not the model—will traverse explicit dependency edges.
+- Validated model output remains a proposal until a person approves a specific action; only authorized server code can mutate data and record an undoable operation.
+
+See [docs/architecture.md](docs/architecture.md) and [AGENTS.md](AGENTS.md) before implementing P0 contracts.
+
+## P0 scope
+
+The Build Week demo targets native project records, explicit dependencies, pasted source evidence, structured extraction, deterministic impact paths, selective recovery approval, operation history, undo, and a reliable reset for one synthetic workspace. External connectors, embeddings, autonomous mutations, and production-readiness claims are out of scope.
+
+## Supabase
+
+Local Supabase configuration is initialized under `supabase/`. When the CLI and its container runtime are available:
 
 ```bash
-pnpm run lint
-pnpm run typecheck
-pnpm run test:run
-pnpm run build
-pnpm run test:smoke
-git diff --check
+npx supabase start
 ```
 
-## Ownership boundary
+No production credentials or database are included in this repository.
 
-Andres owns the product UX and frontend presentation on this branch. Deston
-owns database design, RLS, authorization, server contracts, OpenAI integration,
-and production mutation behavior. See `AGENTS.md`, `docs/architecture.md`, and
-`docs/dependency-rationale.md` before changing those boundaries.
+> TODO before submission: verify the MIT License copyright holder and legal attribution with every InOrdo team member.

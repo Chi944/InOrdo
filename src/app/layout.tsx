@@ -13,16 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "InOrdo — Understand change before it spreads",
-    template: "%s · InOrdo",
-  },
+  title: "InOrdo · Project change under control",
   description:
-    "InOrdo connects source evidence to project impact, selective approval, operation history, and undo.",
-  icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-  },
+    "InOrdo turns project updates into evidence-backed, reviewable changes with deterministic impact paths and human approval.",
 };
 
 export default function RootLayout({
@@ -31,11 +24,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <a className="skip-link" href="#main-content">Skip to main content</a>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full">
+        <a className="skip-link" href="#main-content">
+          Skip to main content
+        </a>
         {children}
       </body>
     </html>

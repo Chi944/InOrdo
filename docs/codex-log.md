@@ -1,40 +1,32 @@
 # Codex implementation log
 
-## 2026-07-17 — Responsive UI shell
+## 2026-07-18 — Repository bootstrap
 
-### Request
+- Replaced the prior repository application history with a clean root `main` foundation at the user’s direction.
+- Scaffolded the current stable Next.js App Router application with TypeScript, ESLint, Tailwind CSS, `src/`, and the `@/*` alias.
+- Added the approved P0 runtime and testing dependencies, Node 22/npm scripts, Vitest setup, and an honest landing-shell smoke test.
+- Added environment documentation, ownership and security rules, product/architecture/demo/QA documentation, CI and contribution templates, MIT licensing, and Supabase CLI configuration.
+- Kept the landing state explicit that the demo workspace and product workflows are not yet operational.
+- No private transcript, credential, or environment value is included in this log.
 
-Bootstrap InOrdo's product UX on the fresh `andres/02-ui-shell` branch with an accessible landing page, authenticated-application presentation, shared components, and a project dashboard aligned to the evidence -> impact -> approval -> undo story.
+## 2026-07-18 — UI shell integration onto shared main
 
-### Documentation work
-
-- Added repository ownership and change guardrails in `AGENTS.md`.
-- Defined the standalone product direction, P0 boundaries, non-goals, and UI conventions in the product brief.
-- Defined a fully synthetic Regional Climate Action Summit fixture, including its exact venue date update, dependency paths, expected impact, selective approval, undo narrative, and reset baseline.
-- Documented the frontend visual-shell architecture, routes, typed fixture boundary, accessibility and responsive conventions, and required backend contracts.
-
-### Boundaries
-
-- This session began from a fresh, empty product branch and used the existing starter only as the frontend base.
-- No backend implementation is claimed in these documents.
-- The documentation work did not change SQL, migrations, RLS, OpenAI code, authorization logic, API contracts, environment handling, or package dependencies.
-- Demo people, records, and updates are synthetic and visibly described as fixture data.
-
-### Frontend bootstrap decision
-
-- The branch contained no application or package metadata, so the Sites/vinext starter supplied the frontend and build spine.
-- The dependency rationale was recorded before initialization and promoted to `docs/dependency-rationale.md` before package cleanup.
-- No component library, icon package, test runner, or browser automation package was added.
-- Generated Drizzle/database examples, optional auth helper, and disposable loading preview are removed rather than committed as implied product capabilities.
-- The retained Worker adapter remains a deployment concern; the UI typecheck is deliberately bounded to frontend code and the production build verifies the adapter.
-
-### Verification record
-
-- `pnpm run lint` — passed.
-- `pnpm run typecheck` — passed.
-- `pnpm run test:run` — passed, 5 tests.
-- `pnpm run build` — passed for `/`, `/demo`, and `/demo/components`.
-- `pnpm run test:smoke` — passed against the production server-rendered output, 2 tests.
-- Browser review — passed at approximately 375, 768, and 1440 pixels with no horizontal page overflow. The landing page, dashboard, mobile navigation, tabs, confirmation dialog, focus return, and component-reference page were exercised. The browser console had no warnings or errors in the final session.
-- Accessibility follow-up — browser testing exposed inconsistent native Escape handling in the confirmation dialog, so an explicit keyboard fallback was added and verified to close the dialog and return focus to its trigger.
-- `git diff --check` and the staged-tree equivalent are required immediately before commit.
+- Fetched the reinitialized `main` branch and confirmed it had a new root commit
+  unrelated to the original UI branch history.
+- Created a local-only safety ref, then connected both histories with an
+  uncommitted merge that completed without Git conflicts.
+- Kept the new npm, Next.js `src/`, CI, Supabase configuration, environment
+  handling, and ownership boundaries as the baseline.
+- Ported the responsive landing entry, application shell, shared components,
+  typed synthetic fixture, and local preview interactions into `src/`.
+- Removed only the obsolete Vinext, pnpm, Worker, and duplicated root-app
+  scaffold from the earlier branch.
+- Did not change SQL, migrations, RLS, authorization, OpenAI code, API contracts,
+  environment values, or production mutation behavior.
+- Verified the integrated tree with npm clean install, ESLint, full TypeScript,
+  four Vitest checks, and a production build containing `/`, `/demo`, and
+  `/demo/components`. The local Codex runtime uses Node 24 and reported the
+  expected engine warning because the repository and CI remain pinned to Node 22.
+- Browser-tested all three routes at approximately 375, 768, and 1440 pixels
+  with no page overflow or console warnings/errors. Rechecked mobile drawer
+  focus containment, Escape focus return, tab selection, and local preview reset.

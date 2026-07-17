@@ -2,7 +2,6 @@
 
 # dependencies
 /node_modules
-/.pnpm-store/
 /.pnp
 .pnp.*
 .yarn/*
@@ -16,8 +15,10 @@
 
 # next.js
 /.next/
-/.vinext/
 /out/
+
+# production
+/build
 
 # misc
 .DS_Store
@@ -29,16 +30,18 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# environment files and local secrets
 .env*
+!.env.example
+.env.local
 
 # vercel
 .vercel
 
 # typescript
-next-env.d.ts
 *.tsbuildinfo
-/dist/
-/.wrangler/
-/outputs/
-/work/
+next-env.d.ts
+
+# playwright
+/playwright-report/
+/test-results/
