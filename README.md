@@ -8,6 +8,8 @@ InOrdo is a Build Week project in the **Work and Productivity** track. It is des
 
 The integrated P0 includes the workspace-scoped Supabase schema and synthetic summit fixture, email/password authentication, protected project records, deterministic dependency traversal, server-only GPT-5.6 analysis, selective approval, ordered audit history, compensating undo, and the named-demo reset workflow. A guarded Chromium journey verifies the real UI and public request contracts with provider/database seams intercepted; the authenticated live Supabase/OpenAI production smoke remains a release gate.
 
+The reviewed application release is commit [`d581b0a9d736bd12046a4314e15b359ec8fd8205`](https://github.com/Chi944/InOrdo-Hackathon/commit/d581b0a9d736bd12046a4314e15b359ec8fd8205), deployed at [inordo-hackathon.vercel.app](https://inordo-hackathon.vercel.app). Exact implementation, verification, deployment, and remaining-human-gate evidence is recorded in [`docs/release-evidence.md`](docs/release-evidence.md).
+
 ## Problem
 
 A venue change, deadline shift, or revised decision rarely affects one record. It can invalidate tasks, milestones, risks, and shared artifacts several steps downstream. Small teams often reconstruct that chain manually, which leads to hidden blockers, stale plans, missed deadlines, and decisions that are hard to trace later.
@@ -262,6 +264,7 @@ The exact synthetic source text and expected dependency path are documented in [
 
 - Production URL: **[inordo-hackathon.vercel.app](https://inordo-hackathon.vercel.app)**
 - Hosting target: **Vercel Hobby, manual Deston CLI deployment to `chi944s-projects/inordo-hackathon`**
+- Deployed application SHA: **`d581b0a9d736bd12046a4314e15b359ec8fd8205`** (`dpl_3JrXGeW9ptujQ8u4yCRDwfo3TNEV`)
 
 The production alias serves the manually deployed Deston-operated Vercel project with no automatic Git deployment. Preserve commit authorship, deploy only a clean reviewed `main` whose `HEAD` exactly equals `origin/main`, and confirm the current Vercel Hobby terms still permit this small non-commercial hackathon demo. Do not add analytics, paid monitoring, a custom domain, workers, scheduled jobs, Railway, or another hosting path for P0.
 
@@ -307,6 +310,7 @@ InOrdo is available under the [MIT License](LICENSE). Copyright is held by the I
 - Product and technical decisions: [`docs/product-brief.md`](docs/product-brief.md), [`docs/architecture.md`](docs/architecture.md)
 - Synthetic demo evidence: [`docs/demo-scenario.md`](docs/demo-scenario.md), [`supabase/seed.sql`](supabase/seed.sql)
 - Verification and unresolved gates: [`docs/qa-checklist.md`](docs/qa-checklist.md)
+- Final release identity and evidence matrix: [`docs/release-evidence.md`](docs/release-evidence.md)
 - Manual Vercel/Supabase release and rollback procedure: [`docs/deployment-runbook.md`](docs/deployment-runbook.md)
 - Codex contribution summary: [`docs/codex-log.md`](docs/codex-log.md)
 - Submission copy and video plan: [`docs/submission-copy.md`](docs/submission-copy.md), [`docs/video-script.md`](docs/video-script.md)

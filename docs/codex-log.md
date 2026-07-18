@@ -49,7 +49,7 @@
 ## 2026-07-18 — Evidence-backed GPT-5.6 analysis pipeline
 
 - Added a strict, bounded, contributor-authorized project analysis boundary for allowlisted source records, with private no-store responses and user-safe errors.
-- Added an injected server-only OpenAI Responses adapter for GPT-5.6 Luna. Extraction and recovery drafting use strict structured output, `store: false`, low reasoning effort, no tools, bounded context/output, a 30-second timeout per logical call, and at most one SDK transient retry per call.
+- Added an injected server-only OpenAI Responses adapter for GPT-5.6 Luna. At this Prompt 7 checkpoint, extraction and recovery drafting used strict structured output, `store: false`, low reasoning effort, no tools, bounded context/output, a 30-second timeout per logical call, and at most one SDK transient retry per call. Prompt 12 later superseded this retry setting with `maxRetries: 0` and no application retry loop.
 - Hardened both prompts against instruction injection and added application postvalidation for supplied IDs, allowlisted fields/actions, canonical values and versions, exact evidence excerpts/offsets, enums, dates, owners, confidence, and deterministic impact coverage.
 - Kept graph reachability in the pure TypeScript engine. The second model call receives only the validated change, deterministic paths, and bounded current values for affected items.
 - Resolved the Prompt 5 persistence prerequisites with a deterministic project revision, normalized source hash, duplicate-state reuse, a five-new-claims-per-actor/project/10-minute rate limit, and explicit action mapping (`update_item_field` → `update_item`; task/risk creation → typed `create_item`; confirmation → `request_confirmation`).
@@ -145,7 +145,35 @@
 - Updated the browser contract to preserve the database `Retry-After` value, instruct the user to resubmit the exact source after that delay, and refresh the failed review record while keeping the safe conflict alert. Duplicate state types now enforce a non-null retry only for `processing`.
 - Applied forward migration `20260719113000_expire_stale_analysis_claims` to the confirmed linked project. The migration ledger and generated types match; public/private lint and security advisors are clean; informational unused-index notices are unchanged. All three rollback-wrapped SQL suites passed, including expired direct-completion rollback and evidence-preserving reconciliation, and no lease-verifier row remained.
 - The complete Node 22.23.1 gate passed: clean `npm ci`, lint, typecheck, 305 Vitest tests across 54 files, one Chromium journey, production build, zero production dependency vulnerabilities, and whitespace checks.
-- The earlier Prompt 12 release deployed clean `main` to `https://inordo-hackathon.vercel.app` and configured hosted Auth redirects plus the six non-OpenAI production names. This repair still requires its own reviewed merge and exact-SHA redeploy. `OPENAI_API_KEY`, a demo Auth account, one funded GPT-5.6 request, and the authenticated production journey remain explicitly unverified; no secret value or private transcript was recorded.
+- PR #9 merged normally as `d581b0a9d736bd12046a4314e15b359ec8fd8205`; that exact clean `main` SHA was deployed as Vercel production deployment `dpl_3JrXGeW9ptujQ8u4yCRDwfo3TNEV` and the public signed-out routes were rechecked. `OPENAI_API_KEY`, a demo Auth account, one funded GPT-5.6 request, and the authenticated production journey remain explicitly unverified; no secret value or private transcript was recorded.
+
+## 2026-07-19 — Final release evidence
+
+- Started the documentation-only Prompt 14 branch from the exact reviewed/deployed application SHA and left application behavior unchanged.
+- Added `docs/release-evidence.md` with the release/deployment identity, actual route and implementation matrix, GPT-5.6 and deterministic-graph boundaries, approval/undo/reset rules, linked verification, public smoke results, known limitations, and Devpost placeholder audit.
+- Reconciled stale release documentation with the merged expired-claim repair, exact production deployment, configured non-OpenAI names and Auth URLs, disabled provider retries, and remaining credentialed/human gates.
+- Kept the funded model call, demo Auth account, authenticated production workflow, responsive/accessibility review, public assets, team/deadline details, and primary `/feedback` Session ID visibly pending rather than manufacturing evidence.
+- Verified the documentation branch under Node 22.23.1/npm 10.9.8: lint, typecheck, 305 Vitest tests across 54 files, and the Next.js 16.2.10 production build passed. The final whitespace check is recorded immediately before commit.
+
+## Codex work-package commit index
+
+The implementation entries above correspond to these Git commits. Merge commits are omitted except for the final reviewed release identity.
+
+| Work package | Commit |
+| --- | --- |
+| Repository bootstrap | [`215cedb`](https://github.com/Chi944/InOrdo-Hackathon/commit/215cedb5248ff753f19501eaebaaa67f5e43bf2f) |
+| Workspace database, RLS, and seed | [`3b65a4e`](https://github.com/Chi944/InOrdo-Hackathon/commit/3b65a4e601aac8f465bbd4832ce41236e8e70e6a) |
+| Authentication and typed data access | [`1aa95f2`](https://github.com/Chi944/InOrdo-Hackathon/commit/1aa95f25858a68697376e0eb0aabe12ddeea2a57) |
+| Project records and dependency engine | [`2c9c11b`](https://github.com/Chi944/InOrdo-Hackathon/commit/2c9c11b15a2094f061c9179d9690196e75cdca31) |
+| Server-only GPT-5.6 analysis | [`7e7405a`](https://github.com/Chi944/InOrdo-Hackathon/commit/7e7405a2bb25d6564a51d14874b6df12c5e059b5) |
+| Approval, history, undo, and reset | [`4f585d7`](https://github.com/Chi944/InOrdo-Hackathon/commit/4f585d7fbb2b63e044d3333b22fecc42cdfc1a76) |
+| Project and dependency views | [`a46b36f`](https://github.com/Chi944/InOrdo-Hackathon/commit/a46b36f728cee8e5e31fbabe707d89e4c3d47830) |
+| Evidence-backed impact review UI | [`4e0ffd4`](https://github.com/Chi944/InOrdo-Hackathon/commit/4e0ffd4e48bf8005fd7c5abf2c3f33e3e8a4f4eb) |
+| Integrated P0 and guarded demo journey | [`e834912`](https://github.com/Chi944/InOrdo-Hackathon/commit/e8349123ad303bc6ad8622d58ebb4e2292bd8f41) |
+| Submission documentation package | [`ef151de`](https://github.com/Chi944/InOrdo-Hackathon/commit/ef151de503b92e5c33f7db454c143f3066287c18) |
+| Production readiness | [`335e213`](https://github.com/Chi944/InOrdo-Hackathon/commit/335e2139e165480d7e07afc49fbef57e6c8e90b3) |
+| Expired-claim repair | [`af808dd`](https://github.com/Chi944/InOrdo-Hackathon/commit/af808dd4a0677070f32259621c79f55799fa5603) |
+| Final reviewed/deployed application release | [`d581b0a9`](https://github.com/Chi944/InOrdo-Hackathon/commit/d581b0a9d736bd12046a4314e15b359ec8fd8205) |
 
 ## Primary `/feedback` evidence
 

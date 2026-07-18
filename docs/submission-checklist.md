@@ -10,6 +10,7 @@ Use this as the final human handoff. Check an item only after testing the exact 
 - [x] The repository contains an MIT `LICENSE` file.
 - [x] The repository contains architecture, demo, security, QA, and Codex implementation evidence.
 - [x] The implementation log contains summaries only and no private Codex transcript or fabricated Session ID.
+- [x] The reviewed/deployed application release is `d581b0a9d736bd12046a4314e15b359ec8fd8205` at `https://inordo-hackathon.vercel.app`.
 
 ## Required public assets and access
 
@@ -41,7 +42,7 @@ Use this as the final human handoff. Check an item only after testing the exact 
 - [ ] Supabase migration, seed, generated-type, and demo-user steps match the checked-in files and do not imply that the seed creates credentials.
 - [ ] `npm ci`, local development, production build, and test commands have been followed from a clean checkout.
 - [ ] Repository structure and actual routes match the final tree.
-- [ ] Deployment instructions name `<DEPLOYMENT_PLATFORM_OR_PROJECT>` only after the final platform is confirmed.
+- [x] Deployment instructions name the confirmed manual Vercel Hobby project `chi944s-projects/inordo-hackathon` and no alternate hosting path.
 
 ## Final QA gate
 
@@ -70,13 +71,14 @@ Use this as the final human handoff. Check an item only after testing the exact 
 
 ## Placeholder inventory
 
-Replace every submission token below before publishing. Search with `rg -n '<(PRODUCTION_URL|DEPLOYMENT_PLATFORM_OR_PROJECT|DEVPOST_URL|PUBLIC_YOUTUBE_VIDEO_URL|DEMO_ACCESS_INSTRUCTIONS_OR_TEST_PATH|PRIMARY_FEEDBACK_SESSION_ID|TEAM_MEMBER_NAMES_AND_ROLES|FINAL_SUBMISSION_DEADLINE_WITH_TIMEZONE)>' README.md docs` and resolve every result intentionally.
+Replace every remaining submission token below before publishing. Search with `rg -n '<(DEVPOST_URL|PUBLIC_YOUTUBE_VIDEO_URL|DEMO_ACCESS_INSTRUCTIONS_OR_TEST_PATH|PRIMARY_FEEDBACK_SESSION_ID|TEAM_MEMBER_NAMES_AND_ROLES|FINAL_SUBMISSION_DEADLINE_WITH_TIMEZONE)>' README.md docs` and resolve every result intentionally.
 
 | Placeholder | Human-supplied value | Verification |
 | --- | --- | --- |
 | Public repository | `https://github.com/Chi944/InOrdo-Hackathon` | Open signed out and confirm the final intended commit and README are visible. |
-| `https://inordo-hackathon.vercel.app` | Final deployed application URL. | Open incognito and run the production checklist. |
-| `<DEPLOYMENT_PLATFORM_OR_PROJECT>` | Confirmed hosting platform/project description, without secret identifiers. | Compare with the actual deployed project. |
+| Production application | `https://inordo-hackathon.vercel.app` | Open incognito and run the production checklist. |
+| Hosting platform/project | Manual Vercel Hobby project `chi944s-projects/inordo-hackathon` | Confirm the project remains manually deployed with no Git-connected automatic deployment. |
+| Deployed application SHA | `d581b0a9d736bd12046a4314e15b359ec8fd8205` | Compare the public deployment metadata and final submission reference. |
 | `<DEVPOST_URL>` | Final public Devpost entry. | Open signed out after submission. |
 | `<PUBLIC_YOUTUBE_VIDEO_URL>` | Public voiceover video URL, duration at most 3:00. | Play signed out and compare against the final build. |
 | `<DEMO_ACCESS_INSTRUCTIONS_OR_TEST_PATH>` | Judge-safe test path or separately delivered account instructions; never a committed password. | Follow from a private browser with the approved access method. |

@@ -10,7 +10,7 @@
 
 ## Before release
 
-Record the deployed application commit, remote migration ledger, affected project/workspace IDs, and the current backup/PITR status. Do not record credentials or raw private evidence. The known-good application commit before Prompt 5 is `1aa95f2` (`feat: add Supabase authentication and data access`). The known-good application commit before Prompt 7 is `2c9c11b` (`feat: add project records and dependency engine`). The known-good application commit before Prompt 9 is `7e7405a` (`feat: add secure evidence-backed project analysis`).
+Record the deployed application commit, remote migration ledger, affected project/workspace IDs, and the current backup/PITR status. Do not record credentials or raw private evidence. The known-good application commit before Prompt 5 is `1aa95f2` (`feat: add Supabase authentication and data access`). The known-good application commit before Prompt 7 is `2c9c11b` (`feat: add project records and dependency engine`). The known-good application commit before Prompt 9 is `7e7405a` (`feat: analyze project changes with GPT-5.6`).
 
 ## Application rollback
 

@@ -50,7 +50,7 @@ The unique key is project/workspace + project revision + normalized source hash.
 
 - Only the server calls the OpenAI Responses API.
 - `OPENAI_MODEL` defaults to `gpt-5.6-luna`.
-- Both logical calls use strict structured outputs, `store: false`, low reasoning effort, no tools, bounded context/output, a 30-second timeout per call, and at most one SDK retry per call for transient failures. A successful analysis therefore has two logical calls and at most four provider attempts.
+- Both logical calls use strict structured outputs, `store: false`, low reasoning effort, no tools, bounded context/output, a 30-second timeout per call, `maxRetries: 0`, and no application retry loop. Prompt 12 superseded the earlier one-retry checkpoint, so a successful new analysis has exactly two logical calls and two provider attempts.
 - Source text is explicitly untrusted. Embedded instructions cannot expand tools, fields, item IDs, or action vocabulary.
 - Application code postvalidates IDs, fields, evidence substrings/offsets, enums, dates, owners, current values, item versions, confidence, and deterministic impact coverage.
 - GPT extracts one candidate change and drafts inert recovery actions. Pure TypeScript, never GPT, determines downstream impact paths.

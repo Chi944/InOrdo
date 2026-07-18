@@ -1,5 +1,20 @@
 # QA checklist
 
+## Prompt 14 final release evidence (`andres/06-final-evidence`)
+
+- [x] The documentation-only branch starts from clean deployed application SHA `d581b0a9d736bd12046a4314e15b359ec8fd8205` and does not change application behavior.
+- [x] Vercel reports deployment `dpl_3JrXGeW9ptujQ8u4yCRDwfo3TNEV` as `READY`, target `production`, Node `22.x`, and `githubCommitSha` equal to the application SHA.
+- [x] The production alias resolves to that deployment; `/` and `/login` return `200`, and signed-out `/app` returns `307` to `/login?next=%2Fapp` without tenant data.
+- [x] With `OPENAI_API_KEY` intentionally absent, production `/api/health` returns the expected generic `503 not_ready` with `Cache-Control: no-store`.
+- [x] Three independent final read-only reviews found no P0/P1 security, migration, concurrency, test, or deployment blocker after the expired-claim repair merged.
+- [x] Prompt 14 `npm run lint` on the settled documentation branch.
+- [x] Prompt 14 `npm run typecheck` on the settled documentation branch.
+- [x] Prompt 14 `npm run test:run` on the settled documentation branch: 305 tests across 54 files.
+- [x] Prompt 14 `npm run build` on the settled documentation branch with Next.js 16.2.10.
+- [x] Prompt 14 `git diff --check` on the settled documentation branch.
+
+The deployed artifact is safe to release with its documented configuration state; this is not evidence that live analysis is operational. The OpenAI key, operator Auth account, funded model request, authenticated production workflow, and final responsive/accessibility pass remain human-owned.
+
 ## Prompt 13 expired-analysis-claim repair (`deston/09-analysis-claim-recovery`)
 
 - [x] Read-only full-repository reviewer pass identified one genuine submission blocker: an interrupted analysis claim could return `processing` forever on exact retries.
@@ -11,11 +26,11 @@
 - [x] Rollback-wrapped `verify_p0.sql`, `verify_analysis_pipeline.sql`, and `verify_operations.sql` passed. The analysis suite covers active-delay response, fixed lease assignment, expired direct-completion rollback, one-time terminal reconciliation, stable replay IDs/state, preserved evidence, late-worker rejection, and private helper privileges. A follow-up query found zero retained lease-verifier sources or requests.
 - [x] Node 22.23.1 clean install, lint, typecheck, 305 Vitest tests across 54 files, one Chromium demo journey, production build, zero production dependency vulnerabilities, and `git diff --check` passed.
 
-The production alias was deployed from clean `main` before this final-review repair. Because this branch changes both schema and application behavior, the exact merged `main` SHA must be redeployed and publicly rechecked after the reviewed PR merges. The intentionally absent `OPENAI_API_KEY`, operator-provisioned Auth account, funded GPT-5.6 smoke, and authenticated browser journey remain human-owned release evidence; none is inferred from this gate.
+PR #9 merged normally as `d581b0a9d736bd12046a4314e15b359ec8fd8205`, the linked migration is applied, and that exact clean `main` SHA was redeployed to the production alias and publicly rechecked. The intentionally absent `OPENAI_API_KEY`, operator-provisioned Auth account, funded GPT-5.6 smoke, and authenticated browser journey remain human-owned release evidence; none is inferred from this gate.
 
 ## Prompt 12 production-readiness gate (`deston/08-production-readiness`)
 
-This section is intentionally unchecked until each command or live step is run on the settled branch/deployment. The exact operator commands and evidence limits are in [`docs/deployment-runbook.md`](deployment-runbook.md).
+This section records each command or live step individually. Checked items have settled-branch/deployment evidence; unchecked items remain pending. The exact operator commands and evidence limits are in [`docs/deployment-runbook.md`](deployment-runbook.md).
 
 - [x] Clean `npm ci` under Node 22 reproduced the lockfile after adding the exact Supabase CLI `2.109.1` development pin.
 - [x] `npm run lint`.
@@ -42,17 +57,17 @@ This section is intentionally unchecked until each command or live step is run o
 ### Vercel/Supabase release evidence
 
 - [ ] Deston confirms current Vercel Hobby terms permit this small non-commercial hackathon demo and records the review date without presenting this checklist as legal advice.
-- [ ] Deston logs in, verifies the `chi944s-projects` scope, links the manual `inordo-hackathon` project, and confirms no Git repository/automatic deployment is connected.
-- [ ] Production has the six non-OpenAI names in the correct Production scopes: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_MODEL`, `DEMO_PROJECT_SLUG`, and `DEMO_RESET_SECRET`. Names/scopes only are recorded; no value is copied.
-- [ ] Until `OPENAI_API_KEY` is supplied, the deployed health route returns `503 not_ready`, analysis is unavailable, and public copy does not claim otherwise.
-- [ ] After the real hosts exist, hosted Supabase Auth Site URL is the exact production origin and its redirects contain both local HTTP wildcards, the exact production `/**` path, and the account-scoped Vercel Preview wildcard.
+- [x] Deston logged in, verified the `chi944s-projects` scope, linked the manual `inordo-hackathon` project, and confirmed through project metadata that no Git repository/automatic deployment is connected.
+- [x] Production has the six non-OpenAI names in the correct Production scopes: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_MODEL`, `DEMO_PROJECT_SLUG`, and `DEMO_RESET_SECRET`. Names/scopes only were recorded; no value was copied.
+- [x] Until `OPENAI_API_KEY` is supplied, the deployed health route returns `503 not_ready`, analysis is unavailable, and public copy does not claim otherwise.
+- [x] Hosted Supabase Auth Site URL is the exact production origin and its redirects contain both local HTTP wildcards, the exact production `/**` path, and the account-scoped Vercel Preview wildcard.
 - [ ] Preview deploy proves `HEAD == origin/main` and divergence `0 0` before and after the gate, inspected deployment metadata matches that recorded full Git SHA, public `/` and `/login` work, and expected missing Preview configuration is not called ready.
-- [ ] Production deploy proves `HEAD == origin/main` and divergence `0 0` before and after the gate, runs with `npx vercel --prod`, and has inspected deployment metadata plus logs matching that exact release without secret/value, build-time provider call, server/client boundary failure, or route timeout.
+- [x] Production deploy proved `HEAD == origin/main == d581b0a9d736bd12046a4314e15b359ec8fd8205` and divergence `0 0`, ran with `npx vercel --prod`, and produced deployment metadata with the same `githubCommitSha`, Node `22.x`, `READY`, target `production`, and no build-time provider call or server/client boundary failure.
 - [ ] In a fresh incognito profile, `/`, `/login`, signed-out `/app`, login/session refresh/logout, and tenant denial behave as documented.
 - [ ] After Deston supplies `OPENAI_API_KEY` and redeploys, `/api/health` returns `200 ready`; exactly one funded synthetic venue analysis records only safe actual-model/ID/status metadata and no prompt, source body, output, key, header, or cookie.
 - [ ] Owner/admin completes the canonical evidence -> deterministic impact -> selective apply -> ordered history -> compensating undo -> protected reset flow; viewer/nonmember/cross-project attempts fail closed.
 - [ ] The exact deployed UI passes keyboard, visible-focus, status-announcement, and no-horizontal-overflow checks at approximately 375, 768, and 1440 pixels.
-- [ ] The previous schema-compatible deployment is identified; the Vercel rollback path is reviewed, and any Git revert either proves the target has no applied migration or preserves every applied migration while using a reviewed forward repair.
+- [x] The previous schema-compatible deployment `dpl_8znxpQsmZsBH7hoqWmLqui4HXtqc` is identified; the Vercel rollback path and migration-preserving Git forward-repair path are reviewed.
 
 ## Prompt 11 submission integration gate (`codex/andres-05-integration`)
 
@@ -110,7 +125,7 @@ Use an operator-created owner/admin account and only the configured synthetic pr
 - [x] The P0 supports one named synthetic project, not general project onboarding.
 - [x] Project/dependency presentation is bounded for the 24-item/26-edge fixture; larger-workspace pagination is deferred.
 - [x] The impact workflow remains a large Client Component; further server/client splitting is a post-P0 performance improvement.
-- [x] Deployment-level body limits, session monitoring, secret rotation, and stuck-analysis reconciliation remain operational controls outside this CI artifact.
+- [x] Deployment-level body limits, session monitoring, secret rotation, and abuse monitoring remain operational controls outside this CI artifact. Fixed-lease stuck-analysis reconciliation is now implemented and tested in the release.
 
 ## Project views branch gate (`andres/03-project-views`)
 
@@ -383,9 +398,9 @@ This subsection preserves the Prompt 7 checkpoint. Prompt 12 supersedes its orig
 | Severity | Issue | Owner | Required resolution or honest fallback |
 | --- | --- | --- | --- |
 | High | No funded live GPT-5.6 request has been recorded in the available environment. | Deston / Shared | Run one safe synthetic analysis after deployment configuration, recording only non-secret metadata. If unavailable, keep all public copy explicit that the live provider call remains unverified. |
-| High | No authenticated production/incognito browser pass or final production URL has been recorded. | Shared | Deploy the reviewed commit, provision the operator-managed synthetic account out of band, and complete the live smoke matrix. There is no documentation-only substitute. |
-| High | Final production/demo-access/Devpost/video URLs, team roles, official deadline, and primary `/feedback` Session ID are not supplied. | Shared | Replace each submission placeholder from its authoritative human/external source and verify every public link before submission. |
-| Medium | Prompt 12 now documents the platform runtime budget, secret scopes, containment, and rollback, but the live Vercel/Supabase configuration and deployment evidence are still pending. | Deston | Execute `docs/deployment-runbook.md` from reviewed `main`, record only safe SHA/status evidence, and keep unavailable capabilities unclaimed. |
+| High | No authenticated production/incognito browser pass has been recorded. | Shared | Provision the operator-managed synthetic account out of band and complete the live smoke matrix on the recorded production URL. There is no documentation-only substitute. |
+| High | Final demo-access, Devpost, and video URLs, team roles, official deadline, and primary `/feedback` Session ID are not supplied. | Shared | Replace each remaining submission placeholder from its authoritative human/external source and verify every public link before submission. |
+| Medium | The exact Vercel artifact, six non-OpenAI production names, hosted Auth redirects, and public signed-out routes are verified, but the OpenAI key, Auth account, funded analysis, and credentialed workflow remain pending. | Deston / Shared | Supply credentials only through the provider/deployment stores, redeploy, require health `200 ready`, and complete the authenticated production smoke without recording values. |
 | Medium | Authenticated Playwright does not cover live Supabase/Auth/OpenAI. | Andres / Shared | Use the guarded journey only as UI/contract evidence; complete the real production browser matrix before making live-service claims. |
 
 ## Submission claim rule
