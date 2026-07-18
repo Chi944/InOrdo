@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 
+import { ImpactWorkflow } from "@/app/app/impact-workflow";
 import { ProjectRecordControls } from "@/app/app/project-record-controls";
 import { createProjectRecordOperations } from "@/features/project-records/operations";
 import { AuthorizationError } from "@/lib/auth/errors";
@@ -19,28 +20,39 @@ import {
 import {
   getDemoWorkspaceProject,
   getProjectOverview,
-  listImpactRunsAndProposals,
-  listOperations,
   listProjectItems,
-  listSourceUpdates,
 } from "@/lib/repositories/project-data";
+import { getImpactWorkflowData } from "@/lib/repositories/impact-review";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
+
+type DemoWorkspacePageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function formatDate(value: string | null) {
   return value ? format(parseISO(value), "MMM d, yyyy") : "Not scheduled";
 }
 
-export default async function DemoWorkspacePage() {
+export default async function DemoWorkspacePage({
+  searchParams,
+}: DemoWorkspacePageProps) {
+  const query = await searchParams;
+  const requestedAnalysisId =
+    typeof query.analysisRequestId === "string" &&
+    uuidPattern.test(query.analysisRequestId)
+      ? query.analysisRequestId
+      : undefined;
   let loadError: unknown;
   let result:
     | {
         overview: Awaited<ReturnType<typeof getProjectOverview>>;
         items: Awaited<ReturnType<typeof listProjectItems>>;
-        sources: Awaited<ReturnType<typeof listSourceUpdates>>;
-        planning: Awaited<ReturnType<typeof listImpactRunsAndProposals>>;
-        operations: Awaited<ReturnType<typeof listOperations>>;
+        workflow: Awaited<ReturnType<typeof getImpactWorkflowData>>;
         dependencies: Awaited<
           ReturnType<
             ReturnType<typeof createProjectRecordOperations>["listDependencies"]
@@ -62,22 +74,20 @@ export default async function DemoWorkspacePage() {
     );
     const projectRecords = createProjectRecordOperations({ client });
 
-    const [overview, items, sources, planning, operations, dependencies] =
+    const [overview, items, workflow, dependencies] =
       await Promise.all([
         getProjectOverview(client, scope),
         listProjectItems(client, scope),
-        listSourceUpdates(client, scope),
-        listImpactRunsAndProposals(client, scope),
-        listOperations(client, scope),
+        getImpactWorkflowData(client, scope, {
+          analysisRequestId: requestedAnalysisId,
+        }),
         projectRecords.listDependencies(scope.projectId),
       ]);
 
     result = {
       overview,
       items,
-      sources,
-      planning,
-      operations,
+      workflow,
       dependencies,
       role: scope.membership.role,
     };
@@ -102,7 +112,7 @@ export default async function DemoWorkspacePage() {
     throw new Error("The project overview could not be loaded.");
   }
 
-  const { overview, items, sources, planning, operations, dependencies, role } =
+  const { overview, items, workflow, dependencies, role } =
     result;
   const workspace = overview.project.workspace;
   const summaryCards = [
@@ -133,7 +143,7 @@ export default async function DemoWorkspacePage() {
       <div className="flex flex-col gap-6 border-b border-rule pb-8 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="font-mono text-[0.68rem] uppercase tracking-[0.15em] text-signal">
-            {workspace?.name ?? "Demo workspace"} · Authenticated preview
+            {workspace?.name ?? "Demo workspace"} · {overview.project.is_demo ? "Synthetic workspace" : "Authenticated workspace"}
           </p>
           <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.055em] text-ink sm:text-5xl">
             {overview.project.name}
@@ -167,6 +177,22 @@ export default async function DemoWorkspacePage() {
           </article>
         ))}
       </section>
+
+      <section className="mt-6 border-l-2 border-signal bg-[#eef1ff] px-4 py-3 text-sm leading-6 text-ink" aria-label="Workspace data notice">
+        <p className="font-semibold">Synthetic demonstration workspace</p>
+        <p className="mt-1 text-muted">
+          All names, records, dates, and seeded source text are fictional. Only results returned by the real analysis and operation contracts appear in the review below.
+        </p>
+      </section>
+
+      <div className="mt-6">
+        <ImpactWorkflow
+          data={workflow}
+          projectId={overview.project.id}
+          role={role}
+          syntheticWorkspace={overview.project.is_demo}
+        />
+      </div>
 
       <section className="mt-10 border border-rule bg-white" aria-labelledby="items-heading">
         <div className="flex flex-col gap-2 border-b border-rule px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -239,20 +265,6 @@ export default async function DemoWorkspacePage() {
         }))}
         projectId={overview.project.id}
       />
-
-      <section className="mt-5 grid gap-4 lg:grid-cols-3" aria-label="Workflow readiness">
-        {[
-          ["Evidence", sources.data.length, "No source update has been submitted in the baseline."],
-          ["Impact and proposals", planning.impacts.length + planning.proposals.length, "Deterministic traversal is available; analysis intake and recovery drafting are not connected yet."],
-          ["Operation history", operations.data.length, "No mutation operation exists in the baseline."],
-        ].map(([label, count, emptyCopy]) => (
-          <article className="border border-rule bg-white p-5" key={String(label)}>
-            <p className="font-mono text-[0.63rem] uppercase tracking-[0.12em] text-muted">{label}</p>
-            <p className="mt-4 text-2xl font-semibold text-ink">{count}</p>
-            <p className="mt-2 text-sm leading-6 text-muted">{Number(count) === 0 ? emptyCopy : "Reviewable records are available."}</p>
-          </article>
-        ))}
-      </section>
     </main>
   );
 }
