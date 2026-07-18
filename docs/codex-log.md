@@ -154,6 +154,8 @@
 - Reconciled stale release documentation with the merged expired-claim repair, exact production deployment, configured non-OpenAI names and Auth URLs, disabled provider retries, and remaining credentialed/human gates.
 - Kept the funded model call, demo Auth account, authenticated production workflow, responsive/accessibility review, public assets, team/deadline details, and primary `/feedback` Session ID visibly pending rather than manufacturing evidence.
 - Verified the documentation branch under Node 22.23.1/npm 10.9.8: lint, typecheck, 305 Vitest tests across 54 files, and the Next.js 16.2.10 production build passed. The final whitespace check is recorded immediately before commit.
+- Added a shared Windows/macOS runbook for provider-approved environment pull, hosted Supabase verification, automated checks, demo-account provisioning, live workflow QA, and Deston/Andres review responsibilities.
+- Refreshed the ignored local environment from the six non-OpenAI Vercel Production names, excluded the pre-existing local OpenAI entry without reading it, and proved through the local health boundary that only `OPENAI_API_KEY` remains intentionally missing. The complete clean-install, unit, Chromium, build, audit, and diff gates passed again without exposing a value.
 
 ## Codex work-package commit index
 

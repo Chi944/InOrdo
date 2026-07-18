@@ -12,6 +12,9 @@
 - [x] Prompt 14 `npm run test:run` on the settled documentation branch: 305 tests across 54 files.
 - [x] Prompt 14 `npm run build` on the settled documentation branch with Next.js 16.2.10.
 - [x] Prompt 14 `git diff --check` on the settled documentation branch.
+- [x] Refreshed the ignored, untracked local `.env.local` from the verified six-name Vercel Production configuration without reading or printing values; an obsolete local OpenAI entry was deliberately excluded.
+- [x] Node 22 local smoke returned `/` and `/login` `200`, signed-out `/app` `307` to the bounded login path, and generic no-store health `503`; the server identified only the intentionally absent `OPENAI_API_KEY` name.
+- [x] The local-parity handoff completed clean install, lint, typecheck, 305 Vitest tests across 54 files, one Chromium journey, production build, zero dependency vulnerabilities, and whitespace checks. After the cross-platform runbook update, lint, typecheck, the complete unit suite, build, and diff checks were run again.
 
 The deployed artifact is safe to release with its documented configuration state; this is not evidence that live analysis is operational. The OpenAI key, operator Auth account, funded model request, authenticated production workflow, and final responsive/accessibility pass remain human-owned.
 

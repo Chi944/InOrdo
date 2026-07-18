@@ -191,6 +191,8 @@ Open `http://localhost:3000`. Keep `.env.local` untracked and never paste its va
 
 Windows PowerShell users can copy the environment template with `Copy-Item .env.example .env.local`.
 
+For the shared hosted-project setup, environment pull, Windows/macOS commands, automated gate, authenticated workflow, and role-specific review steps, follow [`docs/local-run-and-test.md`](docs/local-run-and-test.md).
+
 ## Environment variables
 
 Populate these names in `.env.local` or the deployment environment. No value belongs in this README.
