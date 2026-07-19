@@ -1,10 +1,21 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useId, useRef, useState } from "react";
+import {
+  useActionState,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
 
+import { createOperationIdempotencyKey } from "@/app/app/operation-idempotency";
 import { updateProjectItemAction } from "@/app/app/project-record-actions";
-import { initialRecordActionState } from "@/app/app/project-record-action-state";
+import {
+  initialRecordActionState,
+  restoreRecordMutationForm,
+} from "@/app/app/project-record-action-state";
 
 type EditableItem = {
   id: string;
@@ -56,19 +67,44 @@ function Feedback({ state }: { state: typeof initialRecordActionState }) {
   );
 }
 
+function useMutationIdempotencyKey(
+  scope: string,
+  state: typeof initialRecordActionState,
+) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const rotateKey = useCallback(() => {
+    const key = createOperationIdempotencyKey(scope);
+    if (inputRef.current) inputRef.current.value = key;
+  }, [scope]);
+
+  useEffect(() => {
+    rotateKey();
+  }, [rotateKey]);
+
+  useEffect(() => {
+    if (state.idempotencyKeyDisposition === "rotate") rotateKey();
+  }, [rotateKey, state]);
+
+  return { inputRef, rotateKey };
+}
+
 export function ProjectItemEditor({
   canEdit,
   item,
   memberOptions,
   projectId,
+  workflowGeneration,
 }: {
   canEdit: boolean;
   item: EditableItem;
   memberOptions: MemberOption[];
   projectId: string;
+  workflowGeneration: number;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const submittedFormRef = useRef<FormData | null>(null);
   const prefix = useId();
   const router = useRouter();
   const [itemType, setItemType] = useState(item.itemType);
@@ -80,6 +116,25 @@ export function ProjectItemEditor({
   useEffect(() => {
     if (state.status === "success") router.refresh();
   }, [router, state.status]);
+  const { inputRef: idempotencyKeyInputRef, rotateKey } =
+    useMutationIdempotencyKey(
+      `update-item:${projectId}:${item.id}:${workflowGeneration}`,
+      state,
+    );
+
+  useEffect(() => {
+    if (
+      (state.status === "error" || state.status === "conflict") &&
+      formRef.current &&
+      submittedFormRef.current
+    ) {
+      restoreRecordMutationForm(
+        formRef.current,
+        submittedFormRef.current,
+        state.idempotencyKeyDisposition === "retain",
+      );
+    }
+  }, [state]);
 
   function openDialog() {
     dialogRef.current?.showModal();
@@ -113,10 +168,25 @@ export function ProjectItemEditor({
         onClose={() => triggerRef.current?.focus()}
         ref={dialogRef}
       >
-        <form action={action} aria-busy={pending} className="p-5 sm:p-7">
+        <form
+          action={action}
+          aria-busy={pending}
+          className="p-5 sm:p-7"
+          onChange={rotateKey}
+          onSubmit={(event) => {
+            submittedFormRef.current = new FormData(event.currentTarget);
+          }}
+          ref={formRef}
+        >
           <input name="projectId" type="hidden" value={projectId} />
           <input name="itemId" type="hidden" value={item.id} />
           <input name="expectedVersion" type="hidden" value={item.version} />
+          <input
+            name="expectedWorkflowGeneration"
+            type="hidden"
+            value={workflowGeneration}
+          />
+          <input name="idempotencyKey" ref={idempotencyKeyInputRef} type="hidden" />
           <div className="flex items-start justify-between gap-5 border-b border-rule pb-5">
             <div>
               <p className="font-mono text-[0.63rem] uppercase tracking-[0.13em] text-signal">

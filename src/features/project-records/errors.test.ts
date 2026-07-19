@@ -7,6 +7,7 @@ import {
 
 describe("project record database errors", () => {
   it.each([
+    ["40001", "conflict"],
     ["23505", "conflict"],
     ["23514", "validation"],
     ["23503", "invalid_reference"],
@@ -31,5 +32,20 @@ describe("project record database errors", () => {
       code: "internal",
       message: "The project record could not be saved. Please try again.",
     });
+  });
+
+  it("does not expose stale-generation, idempotency, or version conflict details", () => {
+    const result = mapProjectRecordDatabaseError({
+      code: "40001",
+      message: "stale project generation with private identifiers",
+      details: "request hash and idempotency ledger details",
+    });
+
+    expect(result).toMatchObject({
+      code: "conflict",
+      message: "This project changed while the request was in progress. Refresh and try again.",
+    });
+    expect(result.message).not.toContain("private");
+    expect(result.message).not.toContain("idempotency");
   });
 });

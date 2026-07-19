@@ -1244,6 +1244,44 @@ export type Database = {
         }
         Returns: Json
       }
+      mutate_project_dependency_create: {
+        Args: {
+          p_expected_workflow_generation: number
+          p_idempotency_key: string
+          p_payload: Json
+          p_project_id: string
+        }
+        Returns: Json
+      }
+      mutate_project_dependency_remove: {
+        Args: {
+          p_dependency_id: string
+          p_expected_workflow_generation: number
+          p_idempotency_key: string
+          p_project_id: string
+        }
+        Returns: Json
+      }
+      mutate_project_item_create: {
+        Args: {
+          p_expected_workflow_generation: number
+          p_idempotency_key: string
+          p_payload: Json
+          p_project_id: string
+        }
+        Returns: Json
+      }
+      mutate_project_item_update: {
+        Args: {
+          p_expected_version: number
+          p_expected_workflow_generation: number
+          p_idempotency_key: string
+          p_item_id: string
+          p_patch: Json
+          p_project_id: string
+        }
+        Returns: Json
+      }
       reset_demo_project: {
         Args: {
           p_actor_id: string

@@ -5,6 +5,7 @@ import {
   type ProjectRecordAuthorizer,
   type ProjectRecordStore,
 } from "@/features/project-records/operations";
+import { ProjectRecordError } from "@/features/project-records/errors";
 import type { AuthorizedProjectScope } from "@/lib/auth/guards";
 import type { ServerSupabaseClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/database";
@@ -15,6 +16,10 @@ const userId = "6519012e-13a6-4e3e-9ae5-d09bd3054401";
 const itemId = "3e14b4a4-421d-4d6d-8a7e-01d5a22e3002";
 const upstreamId = "b993a2d1-8060-4c96-a7d0-e79f4cd43303";
 const dependencyId = "4db0760c-d441-4b39-845d-f011b3e14404";
+const mutationGuard = {
+  expectedWorkflowGeneration: 7,
+  idempotencyKey: "records_20260719_001",
+};
 
 const scope: AuthorizedProjectScope = {
   workspaceId,
@@ -58,18 +63,31 @@ const dependencyRow: Tables<"item_dependencies"> = {
 
 function makeStore(overrides: Partial<ProjectRecordStore> = {}) {
   const store: ProjectRecordStore = {
-    createItem: vi.fn(async () => itemRow),
-    getItem: vi.fn(async () => itemRow),
-    updateItem: vi.fn(async () => ({ ...itemRow, version: 3 })),
+    createItem: vi.fn(async () => ({
+      status: "succeeded" as const,
+      workflowGeneration: 7,
+      record: itemRow,
+    })),
+    updateItem: vi.fn(async () => ({
+      status: "succeeded" as const,
+      workflowGeneration: 7,
+      record: { ...itemRow, version: 3 },
+    })),
     listItems: vi.fn(async () => ({
       items: [itemRow],
       total: 1,
       nextCursor: null,
     })),
-    hasWorkspaceMember: vi.fn(async () => true),
-    getProjectItemIds: vi.fn(async () => [itemId, upstreamId]),
-    createDependency: vi.fn(async () => dependencyRow),
-    removeDependency: vi.fn(async () => dependencyRow),
+    createDependency: vi.fn(async () => ({
+      status: "succeeded" as const,
+      workflowGeneration: 7,
+      record: dependencyRow,
+    })),
+    removeDependency: vi.fn(async () => ({
+      status: "succeeded" as const,
+      workflowGeneration: 7,
+      dependencyId,
+    })),
     listDependencies: vi.fn(async () => [dependencyRow]),
     ...overrides,
   };
@@ -78,7 +96,7 @@ function makeStore(overrides: Partial<ProjectRecordStore> = {}) {
 }
 
 function makeAuthorizer() {
-  return vi.fn<ProjectRecordAuthorizer>(async () => ({ userId, scope }));
+  return vi.fn<ProjectRecordAuthorizer>(async () => ({ scope }));
 }
 
 function operations(
@@ -122,6 +140,7 @@ describe("project record operations", () => {
 
     await expect(
       operations(store, authorize).createItem({
+        ...mutationGuard,
         projectId,
         itemKey: "OPS-13",
         itemType: "task",
@@ -131,63 +150,82 @@ describe("project record operations", () => {
     expect(store.createItem).not.toHaveBeenCalled();
   });
 
-  it("rejects assigning an owner outside the authorized workspace", async () => {
-    const store = makeStore({ hasWorkspaceMember: vi.fn(async () => false) });
+  it("lets the authoritative RPC resolve an exact create replay before mutable references", async () => {
+    const duplicateResult = {
+      status: "duplicate" as const,
+      workflowGeneration: 7,
+      record: itemRow,
+    };
+    const store = makeStore({
+      createItem: vi.fn(async () => duplicateResult),
+    });
 
     await expect(
       operations(store).createItem({
+        ...mutationGuard,
         projectId,
         itemKey: "OPS-13",
         itemType: "task",
         title: "Prepare invitations",
         ownerId: upstreamId,
       }),
-    ).rejects.toMatchObject({
-      code: "invalid_reference",
-      message: "The selected owner is not a member of this workspace.",
-    });
-    expect(store.createItem).not.toHaveBeenCalled();
+    ).resolves.toEqual(duplicateResult);
+    expect(store.createItem).toHaveBeenCalledOnce();
   });
 
-  it("returns a safe conflict when a conditional update loses a race", async () => {
-    const store = makeStore({ updateItem: vi.fn(async () => null) });
+  it("passes mutation guards to the store and preserves duplicate replay results", async () => {
+    const duplicateResult = {
+      status: "duplicate" as const,
+      workflowGeneration: 7,
+      record: { ...itemRow, version: 3 },
+    };
+    const store = makeStore({ updateItem: vi.fn(async () => duplicateResult) });
 
     await expect(
       operations(store).updateItem({
+        ...mutationGuard,
         projectId,
         itemId,
         expectedVersion: 2,
+        status: "in_progress",
+      }),
+    ).resolves.toEqual(duplicateResult);
+    expect(store.updateItem).toHaveBeenCalledWith(
+      scope,
+      expect.objectContaining({
+        projectId,
+        itemId,
+        expectedVersion: 2,
+        expectedWorkflowGeneration: 7,
+        idempotencyKey: "records_20260719_001",
+        status: "in_progress",
+      }),
+    );
+  });
+
+  it("lets the authoritative mutation RPC report a stale item conflict", async () => {
+    const store = makeStore({
+      updateItem: vi.fn(async () => {
+        throw new ProjectRecordError(
+          "conflict",
+          "This item changed since you loaded it. Refresh and try again.",
+        );
+      }),
+    });
+
+    await expect(
+      operations(store).updateItem({
+        ...mutationGuard,
+        projectId,
+        itemId,
+        expectedVersion: 3,
         status: "in_progress",
       }),
     ).rejects.toMatchObject({
       code: "conflict",
       message: "This item changed since you loaded it. Refresh and try again.",
     });
-    expect(store.updateItem).toHaveBeenCalledWith(
-      scope,
-      itemId,
-      2,
-      { status: "in_progress" },
-    );
-  });
-
-  it("rejects a dependency when either endpoint is outside the project", async () => {
-    const store = makeStore({
-      getProjectItemIds: vi.fn(async () => [itemId]),
-    });
-
-    await expect(
-      operations(store).createDependency({
-        projectId,
-        fromItemId: itemId,
-        toItemId: upstreamId,
-        relationship: "requires",
-      }),
-    ).rejects.toMatchObject({
-      code: "invalid_reference",
-      message: "Both dependency items must belong to this project.",
-    });
-    expect(store.createDependency).not.toHaveBeenCalled();
+    expect(store.updateItem).toHaveBeenCalledOnce();
   });
 
   it("creates a dependency only after contributor authorization", async () => {
@@ -196,12 +234,17 @@ describe("project record operations", () => {
 
     await expect(
       operations(store, authorize).createDependency({
+        ...mutationGuard,
         projectId,
         fromItemId: itemId,
         toItemId: upstreamId,
         relationship: "requires",
       }),
-    ).resolves.toEqual(dependencyRow);
+    ).resolves.toMatchObject({
+      status: "succeeded",
+      workflowGeneration: 7,
+      record: dependencyRow,
+    });
     expect(authorize).toHaveBeenCalledWith(
       expect.anything(),
       projectId,
@@ -209,16 +252,29 @@ describe("project record operations", () => {
     );
     expect(store.createDependency).toHaveBeenCalledWith(
       scope,
-      userId,
-      expect.objectContaining({ fromItemId: itemId, toItemId: upstreamId }),
+      expect.objectContaining({
+        fromItemId: itemId,
+        toItemId: upstreamId,
+        expectedWorkflowGeneration: 7,
+        idempotencyKey: "records_20260719_001",
+      }),
     );
   });
 
-  it("reports an unknown scoped dependency as not found on removal", async () => {
-    const store = makeStore({ removeDependency: vi.fn(async () => null) });
+  it("passes the complete guarded removal input to the mutation store", async () => {
+    const store = makeStore();
 
     await expect(
-      operations(store).removeDependency({ projectId, dependencyId }),
-    ).rejects.toMatchObject({ code: "not_found" });
+      operations(store).removeDependency({
+        ...mutationGuard,
+        projectId,
+        dependencyId,
+      }),
+    ).resolves.toMatchObject({ status: "succeeded", dependencyId });
+    expect(store.removeDependency).toHaveBeenCalledWith(scope, {
+      ...mutationGuard,
+      projectId,
+      dependencyId,
+    });
   });
 });

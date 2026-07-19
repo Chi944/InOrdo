@@ -228,6 +228,14 @@ The implementation entries above correspond to these Git commits. Merge commits 
 - The exact reconciled branch passed fresh Node 22.23.1/npm 10.9.8 install, lint, typecheck, 359 Vitest tests across 55 files, one guarded Chromium journey, the Next.js 16.2.10 production build, zero production dependency vulnerabilities, and local-link/whitespace checks. The lockfile remained byte-identical, `.env.local` remained ignored, and filename/count-only scans found no unexpected tracked environment path or credential-format match in the working tree or all 34 reachable commits.
 - The Vercel Hobby eligibility decision, OpenAI key, demo Auth accounts, funded model call, authenticated production workflow, production responsive/accessibility pass, final public assets, team details, license attribution, and `/feedback` identifier remain human-owned gates.
 
+## 2026-07-19 — Terminal action and generation integrity
+
+- Added a deferred, final-state reconciliation boundary for superseded proposals. Only pending and approved child actions become stale; system-staled pending actions receive no fabricated reviewer, approved actions preserve attribution, and applied/rejected history remains unchanged.
+- Replaced authenticated direct project-item and dependency writes with four typed, allowlisted database RPCs. Each reauthorizes the current contributor, locks the project row shared with reset/apply, validates project-owned references, enforces the expected workflow generation and item version, and commits one private append-only receipt with the mutation.
+- Exact idempotency replay is resolved before the generation check so a confirmed pre-reset success remains a duplicate after reset. A pre-reset request that first reaches the database after reset fails stale without consuming its key; a corrected current-generation request can use that key once.
+- Added hidden server-rendered generation inputs and logical-request idempotency keys to the existing item/dependency forms without changing their visual design. Known validation, authorization, and conflict responses rotate the key; an ambiguous failure retains it for safe unchanged replay, while editing the form rotates it immediately.
+- Added rollback-wrapped SQL and focused TypeScript/UI regressions. A clean Node 22.23.1/npm 10.9.8 install, lint, typecheck, 385 Vitest tests across 57 files, production build, one guarded Chromium journey, zero-vulnerability production audit, clean local migration replay, all nine SQL verifiers, schema lint, generated-type comparison, and a two-session reset-fence race passed. Independent backend, UI, and SQL reviews found no remaining P0/P1 issue after the mutable pre-RPC replay blocker was removed. This is local evidence only; no hosted migration, deployment, provider call, credentialed browser flow, or private transcript is claimed here.
+
 ## Primary `/feedback` evidence
 
 Primary Session ID: `<PRIMARY_FEEDBACK_SESSION_ID>`

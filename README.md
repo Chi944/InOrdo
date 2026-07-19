@@ -245,6 +245,8 @@ The Prompt 13 evidence-integrity bridge keeps one canonical revision/hash analys
 
 Approval-integrity migration `20260719130000_harden_approval_action_integrity` rejects ambiguous duplicate updates and incompatible date-action sets before they can become approvable. It also records versioned create-item receipts from the actual committed row while preserving legacy append-only receipts. The focused local verifiers are `supabase/tests/verify_proposal_action_integrity.sql` and `supabase/tests/verify_create_item_receipts.sql`; run them through the same rollback-wrapped local `psql` pattern after `supabase db reset`.
 
+Generation-integrity migration `20260719140000_guard_project_record_mutations` moves authenticated item and dependency writes behind four typed RPCs. Each RPC authorizes the current contributor, locks the project row shared with apply/reset, binds an idempotency key to one canonical request, replays an exact success before checking generation, and rejects a stale pre-reset request without consuming its key. Direct authenticated DML is revoked while member reads and service-role orchestration remain available. Superseded proposals reconcile pending or approved child actions to `stale` at transaction end, so temporary supersession inside a successful apply does not corrupt action state.
+
 ## Run, test, and build commands
 
 | Command | Purpose |

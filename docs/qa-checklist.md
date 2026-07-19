@@ -257,6 +257,15 @@ Linked evidence on 2026-07-18: the migration ledger is aligned through `20260718
 - [x] A clean local migration replay, error-level schema lint, all seven rollback-wrapped SQL verifiers, focused Node 22 tests, and an exact create-apply receipt assertion passed. This is local evidence only; no linked/remote migration or authenticated browser claim is made here.
 - [ ] With an operator-created owner/admin account, review and apply one synthetic create action in the deployed UI; confirm all disclosed values match the created row and version-2 audit receipt exactly.
 
+### Prompt 13 generation-integrity additions
+
+- [x] Clean local migration replay and database lint pass through `20260719140000_guard_project_record_mutations`.
+- [x] `verify_superseded_action_reconciliation.sql` proves pending/approved staleness, attribution preservation, terminal-history preservation, and apply-safe deferred reconciliation.
+- [x] `verify_generation_guarded_mutations.sql` proves RPC authorization, direct-DML denial, strict record validation, exact replay, key conflicts, generation/version fences, and dependency integrity.
+- [x] A real two-session local race proved a generation-1 mutation waited behind the project lock, rejected with `40001` after generation advanced to 2, and created zero stale items and zero ledger receipts.
+- [x] Node 22.23.1/npm 10.9.8 clean install, lint, typecheck, 385 unit tests across 57 files, guarded Chromium journey, production build, zero-vulnerability production audit, generated-type comparison, and diff check passed on the settled branch.
+- [ ] Hosted migration and authenticated browser verification remain pending until the reviewed branch is merged and the operator explicitly opens the release gate.
+
 ### Pending authenticated HTTP/browser procedure
 
 The linked SQL/RPC procedure above is complete. The following end-to-end procedure still requires an operator-created owner/admin Auth account and the configured synthetic project. Keep all credentials in untracked environment configuration; do not paste or print them.

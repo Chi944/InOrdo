@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   useActionState,
+  useCallback,
   useEffect,
   useId,
   useMemo,
@@ -11,8 +12,12 @@ import {
   useState,
 } from "react";
 
-import { initialRecordActionState } from "@/app/app/project-record-action-state";
+import {
+  initialRecordActionState,
+  restoreRecordMutationForm,
+} from "@/app/app/project-record-action-state";
 import { createProjectItemAction } from "@/app/app/project-record-actions";
+import { createOperationIdempotencyKey } from "@/app/app/operation-idempotency";
 
 export type ProjectItemType =
   | "task"
@@ -53,6 +58,7 @@ export type ProjectItemsViewItem = {
 
 export type ProjectItemsViewProps = {
   projectId: string;
+  workflowGeneration: number;
   items: ProjectItemsViewItem[];
   memberOptions: ProjectMemberOption[];
   canEdit: boolean;
@@ -166,18 +172,42 @@ function PriorityBadge({ priority }: { priority: ProjectItemPriority }) {
   );
 }
 
+function useMutationIdempotencyKey(
+  scope: string,
+  state: typeof initialRecordActionState,
+) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const rotateKey = useCallback(() => {
+    const key = createOperationIdempotencyKey(scope);
+    if (inputRef.current) inputRef.current.value = key;
+  }, [scope]);
+
+  useEffect(() => {
+    rotateKey();
+  }, [rotateKey]);
+
+  useEffect(() => {
+    if (state.idempotencyKeyDisposition === "rotate") rotateKey();
+  }, [rotateKey, state]);
+
+  return { inputRef, rotateKey };
+}
+
 function CreateItemDialog({
   projectId,
   memberOptions,
+  workflowGeneration,
 }: {
   projectId: string;
   memberOptions: ProjectMemberOption[];
+  workflowGeneration: number;
 }) {
   const prefix = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const openButtonRef = useRef<HTMLButtonElement>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const submittedFormRef = useRef<FormData | null>(null);
   const router = useRouter();
   const [state, action, isPending] = useActionState(
     createProjectItemAction,
@@ -187,10 +217,30 @@ function CreateItemDialog({
   useEffect(() => {
     if (state.status === "success") {
       formRef.current?.reset();
+      submittedFormRef.current = null;
       router.refresh();
       firstFieldRef.current?.focus();
     }
   }, [router, state.status]);
+  const { inputRef: idempotencyKeyInputRef, rotateKey } =
+    useMutationIdempotencyKey(
+      `create-item:${projectId}:${workflowGeneration}`,
+      state,
+    );
+
+  useEffect(() => {
+    if (
+      (state.status === "error" || state.status === "conflict") &&
+      formRef.current &&
+      submittedFormRef.current
+    ) {
+      restoreRecordMutationForm(
+        formRef.current,
+        submittedFormRef.current,
+        state.idempotencyKeyDisposition === "retain",
+      );
+    }
+  }, [state]);
 
   function openDialog() {
     const dialog = dialogRef.current;
@@ -277,9 +327,19 @@ function CreateItemDialog({
           action={action}
           aria-busy={isPending}
           className="grid gap-5 p-5 sm:grid-cols-2 sm:p-6"
+          onChange={rotateKey}
+          onSubmit={(event) => {
+            submittedFormRef.current = new FormData(event.currentTarget);
+          }}
           ref={formRef}
         >
           <input name="projectId" type="hidden" value={projectId} />
+          <input
+            name="expectedWorkflowGeneration"
+            type="hidden"
+            value={workflowGeneration}
+          />
+          <input name="idempotencyKey" ref={idempotencyKeyInputRef} type="hidden" />
 
           <label
             className="text-sm font-medium text-ink"
@@ -609,6 +669,7 @@ function ItemCards({ items }: { items: ProjectItemsViewItem[] }) {
 
 export function ProjectItemsView({
   projectId,
+  workflowGeneration,
   items,
   memberOptions,
   canEdit,
@@ -702,6 +763,7 @@ export function ProjectItemsView({
           <CreateItemDialog
             memberOptions={memberOptions}
             projectId={projectId}
+            workflowGeneration={workflowGeneration}
           />
         ) : (
           <p className="border border-rule bg-paper px-3 py-2 text-sm text-muted">

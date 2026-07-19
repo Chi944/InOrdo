@@ -108,6 +108,12 @@ If the bridge or invalidation logic is suspect, contain the analyze and apply ro
 
 If version-2 create receipts are suspect, contain create-item apply actions while leaving authorized history readable. Compare the receipt only through the authorized boundary with the committed item and operation/action IDs; do not copy private descriptions or owner data into tickets. Never update or backfill an existing `operation_items.after_state`, and never make a create operation reversible to compensate for a receipt defect. Ship a forward trigger/parser repair that keeps legacy summaries honest, then run a clean migration replay, schema lint, the operation suite, both focused approval-integrity verifiers, and one synthetic create-apply receipt check before reopening that action type.
 
+### Generation-fenced native mutation correction
+
+`20260719140000_guard_project_record_mutations` is forward-only. If one native mutation RPC or its receipt ledger is suspect, contain the create/edit/dependency server actions first and keep authorized reads available. Do not re-enable direct authenticated table DML, delete or rewrite a successful ledger receipt, decrement `workflow_generation`, revive a stale action, or remove deferred reconciliation as a rollback shortcut.
+
+Record only safe project, actor, mutation type, generation, item/dependency ID, version, idempotency-key fingerprint, state, and timestamp coordinates. Reconcile an ambiguous request by replaying the exact same request through the authorized RPC; never guess whether it committed. A corrective migration must retain project-row serialization, exact-success replay before generation validation, mismatch conflicts, no key consumption for rejected stale requests, append-only receipts, and the pending/approved-only staleness rule. Re-run every baseline and focused SQL verifier plus a real reset/mutation race before reopening writes.
+
 ## Prompt 9 operation rollback
 
 Prompt 9 introduces privileged apply, undo, history, and reset routes plus forward schema for canonical request fingerprints, ordered audit items, workflow generations, generation-scoped evidence, active-key retirement, and a private deterministic demo baseline. Its rollback objective is to stop new mutations, use audited compensation only when safe, and preserve every evidence/audit generation. It is never a request to erase an operation, decrement a version/generation, or rewrite shared Git/database history.

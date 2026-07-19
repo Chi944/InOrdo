@@ -24,20 +24,39 @@ function nullableString(formData: FormData, name: string) {
   return value === "" ? null : value;
 }
 
-function actionError(error: unknown): RecordActionState {
-  if (error instanceof ProjectRecordError) {
-    if (error.code === "conflict") {
-      return { status: "conflict", message: `Conflict: ${error.message}` };
-    }
-    return { status: "error", message: error.message };
-  }
-  if (error instanceof AuthorizationError) {
-    return { status: "error", message: error.message };
-  }
+function ambiguousActionError(): RecordActionState {
   return {
     status: "error",
-    message: "The project record could not be changed. Please try again.",
+    message:
+      "The result could not be confirmed. Retry the unchanged form to safely check the same request.",
+    idempotencyKeyDisposition: "retain",
   };
+}
+
+function actionError(error: unknown): RecordActionState {
+  if (error instanceof ProjectRecordError) {
+    if (error.code === "internal") return ambiguousActionError();
+    if (error.code === "conflict") {
+      return {
+        status: "conflict",
+        message: `Conflict: ${error.message}`,
+        idempotencyKeyDisposition: "rotate",
+      };
+    }
+    return {
+      status: "error",
+      message: error.message,
+      idempotencyKeyDisposition: "rotate",
+    };
+  }
+  if (error instanceof AuthorizationError) {
+    return {
+      status: "error",
+      message: error.message,
+      idempotencyKeyDisposition: "rotate",
+    };
+  }
+  return ambiguousActionError();
 }
 
 async function operations() {
@@ -53,6 +72,10 @@ export async function createProjectItemAction(
     const projectRecords = await operations();
     await projectRecords.createItem({
       projectId: stringValue(formData, "projectId"),
+      expectedWorkflowGeneration: Number(
+        stringValue(formData, "expectedWorkflowGeneration"),
+      ),
+      idempotencyKey: stringValue(formData, "idempotencyKey"),
       itemKey: stringValue(formData, "itemKey"),
       itemType: stringValue(formData, "itemType"),
       title: stringValue(formData, "title"),
@@ -65,7 +88,11 @@ export async function createProjectItemAction(
       eventDate: optionalString(formData, "eventDate"),
     });
     revalidatePath("/app", "layout");
-    return { status: "success", message: "Project item created." };
+    return {
+      status: "success",
+      message: "Project item created.",
+      idempotencyKeyDisposition: "rotate",
+    };
   } catch (error) {
     return actionError(error);
   }
@@ -81,6 +108,10 @@ export async function updateProjectItemAction(
       projectId: stringValue(formData, "projectId"),
       itemId: stringValue(formData, "itemId"),
       expectedVersion: Number(stringValue(formData, "expectedVersion")),
+      expectedWorkflowGeneration: Number(
+        stringValue(formData, "expectedWorkflowGeneration"),
+      ),
+      idempotencyKey: stringValue(formData, "idempotencyKey"),
       ...(formData.has("itemKey") && {
         itemKey: stringValue(formData, "itemKey"),
       }),
@@ -112,7 +143,11 @@ export async function updateProjectItemAction(
     };
     await projectRecords.updateItem(input);
     revalidatePath("/app", "layout");
-    return { status: "success", message: "Project item updated." };
+    return {
+      status: "success",
+      message: "Project item updated.",
+      idempotencyKeyDisposition: "rotate",
+    };
   } catch (error) {
     return actionError(error);
   }
@@ -126,13 +161,21 @@ export async function createDependencyAction(
     const projectRecords = await operations();
     await projectRecords.createDependency({
       projectId: stringValue(formData, "projectId"),
+      expectedWorkflowGeneration: Number(
+        stringValue(formData, "expectedWorkflowGeneration"),
+      ),
+      idempotencyKey: stringValue(formData, "idempotencyKey"),
       fromItemId: stringValue(formData, "fromItemId"),
       toItemId: stringValue(formData, "toItemId"),
       relationship: stringValue(formData, "relationship"),
       rationale: optionalString(formData, "rationale"),
     });
     revalidatePath("/app", "layout");
-    return { status: "success", message: "Dependency added." };
+    return {
+      status: "success",
+      message: "Dependency added.",
+      idempotencyKeyDisposition: "rotate",
+    };
   } catch (error) {
     return actionError(error);
   }
@@ -147,9 +190,17 @@ export async function removeDependencyAction(
     await projectRecords.removeDependency({
       projectId: stringValue(formData, "projectId"),
       dependencyId: stringValue(formData, "dependencyId"),
+      expectedWorkflowGeneration: Number(
+        stringValue(formData, "expectedWorkflowGeneration"),
+      ),
+      idempotencyKey: stringValue(formData, "idempotencyKey"),
     });
     revalidatePath("/app", "layout");
-    return { status: "success", message: "Dependency removed." };
+    return {
+      status: "success",
+      message: "Dependency removed.",
+      idempotencyKeyDisposition: "rotate",
+    };
   } catch (error) {
     return actionError(error);
   }

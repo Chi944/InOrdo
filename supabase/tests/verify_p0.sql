@@ -268,18 +268,25 @@ begin
 end;
 $$;
 
--- RLS: a viewer mutation affects zero rows and leaves the record unchanged.
+-- Native records are read-only through table APIs: a viewer mutation is
+-- privilege-denied and leaves the record unchanged.
 do $$
 declare
   changed_count integer;
   current_title text;
+  denied boolean := false;
 begin
-  update public.project_items
-  set title = 'viewer mutation must not persist'
-  where id = '30000000-0000-4000-8000-000000000001';
-  get diagnostics changed_count = row_count;
-  if changed_count <> 0 then
-    raise exception 'viewer mutation unexpectedly changed % rows', changed_count;
+  begin
+    update public.project_items
+    set title = 'viewer mutation must not persist'
+    where id = '30000000-0000-4000-8000-000000000001';
+    get diagnostics changed_count = row_count;
+  exception when insufficient_privilege then
+    denied := true;
+    changed_count := 0;
+  end;
+  if not denied or changed_count <> 0 then
+    raise exception 'viewer direct mutation was not privilege-denied';
   end if;
   select title into current_title
   from public.project_items
@@ -305,6 +312,7 @@ do $$
 declare
   visible_count integer;
   changed_count integer;
+  denied boolean := false;
 begin
   if private.is_workspace_member(
     '10000000-0000-4000-8000-000000000001'::uuid
@@ -319,12 +327,17 @@ begin
     raise exception 'anonymous identity unexpectedly read a project';
   end if;
 
-  update public.project_items
-  set status = 'in_progress'
-  where id = '30000000-0000-4000-8000-000000000001';
-  get diagnostics changed_count = row_count;
-  if changed_count <> 0 then
-    raise exception 'anonymous identity unexpectedly changed a project item';
+  begin
+    update public.project_items
+    set status = 'in_progress'
+    where id = '30000000-0000-4000-8000-000000000001';
+    get diagnostics changed_count = row_count;
+  exception when insufficient_privilege then
+    denied := true;
+    changed_count := 0;
+  end;
+  if not denied or changed_count <> 0 then
+    raise exception 'anonymous identity direct mutation was not privilege-denied';
   end if;
 end;
 $$;

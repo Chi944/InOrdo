@@ -11,11 +11,69 @@ import {
 const projectId = "8d2baf13-b687-4987-83a0-0b1294b0f001";
 const itemId = "3e14b4a4-421d-4d6d-8a7e-01d5a22e3002";
 const otherItemId = "b993a2d1-8060-4c96-a7d0-e79f4cd43303";
+const mutationGuard = {
+  expectedWorkflowGeneration: 7,
+  idempotencyKey: "records_20260719_001",
+};
+
+describe("project record mutation guards", () => {
+  it.each([
+    [createProjectItemSchema, {
+      projectId,
+      itemKey: "OPS-12",
+      itemType: "task",
+      title: "Confirm the venue contract",
+    }],
+    [updateProjectItemSchema, {
+      projectId,
+      itemId,
+      expectedVersion: 3,
+      title: "Confirm the revised venue contract",
+    }],
+    [createDependencySchema, {
+      projectId,
+      fromItemId: itemId,
+      toItemId: otherItemId,
+    }],
+    [deleteDependencySchema, { projectId, dependencyId: itemId }],
+  ])("requires a positive safe generation and portable idempotency key", (schema, payload) => {
+    expect(schema.safeParse(payload).success).toBe(false);
+    for (const expectedWorkflowGeneration of [
+      -1,
+      0,
+      1.5,
+      Number.MAX_SAFE_INTEGER + 1,
+    ]) {
+      expect(
+        schema.safeParse({
+          ...payload,
+          expectedWorkflowGeneration,
+          idempotencyKey: "records_20260719_001",
+        }).success,
+      ).toBe(false);
+    }
+    for (const idempotencyKey of [
+      "short",
+      "unsafe key!",
+      "x".repeat(201),
+    ]) {
+      expect(
+        schema.safeParse({
+          ...payload,
+          expectedWorkflowGeneration: 1,
+          idempotencyKey,
+        }).success,
+      ).toBe(false);
+    }
+    expect(schema.safeParse({ ...payload, ...mutationGuard }).success).toBe(true);
+  });
+});
 
 describe("createProjectItemSchema", () => {
   it("accepts a bounded task payload with approved enum values", () => {
     expect(
       createProjectItemSchema.parse({
+        ...mutationGuard,
         projectId,
         itemKey: "OPS-12",
         itemType: "task",
@@ -44,6 +102,7 @@ describe("createProjectItemSchema", () => {
 
   it("enforces the 64-character item-key boundary", () => {
     const base = {
+      ...mutationGuard,
       projectId,
       itemType: "task" as const,
       title: "Boundary verifier",
@@ -65,6 +124,7 @@ describe("createProjectItemSchema", () => {
 
   it("rejects an inverted start and due date", () => {
     const result = createProjectItemSchema.safeParse({
+      ...mutationGuard,
       projectId,
       itemKey: "OPS-12",
       itemType: "task",
@@ -82,6 +142,7 @@ describe("createProjectItemSchema", () => {
   it("allows event dates only for event items", () => {
     expect(
       createProjectItemSchema.safeParse({
+        ...mutationGuard,
         projectId,
         itemKey: "EVT-12",
         itemType: "task",
@@ -92,6 +153,7 @@ describe("createProjectItemSchema", () => {
 
     expect(
       createProjectItemSchema.safeParse({
+        ...mutationGuard,
         projectId,
         itemKey: "EVT-12",
         itemType: "event",
@@ -103,18 +165,44 @@ describe("createProjectItemSchema", () => {
 });
 
 describe("updateProjectItemSchema", () => {
+  it("rejects expected versions beyond JavaScript safe integer precision", () => {
+    const result = updateProjectItemSchema.safeParse({
+      ...mutationGuard,
+      projectId,
+      itemId,
+      expectedVersion: Number.MAX_SAFE_INTEGER + 1,
+      title: "Precision guard",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.map((issue) => issue.message)).toContain(
+      "Expected version must be a safe integer.",
+    );
+  });
+
   it("requires a positive optimistic-concurrency version and a non-empty patch", () => {
     expect(
-      updateProjectItemSchema.safeParse({ projectId, itemId, expectedVersion: 0 }).success,
+      updateProjectItemSchema.safeParse({
+        ...mutationGuard,
+        projectId,
+        itemId,
+        expectedVersion: 0,
+      }).success,
     ).toBe(false);
     expect(
-      updateProjectItemSchema.safeParse({ projectId, itemId, expectedVersion: 3 }).success,
+      updateProjectItemSchema.safeParse({
+        ...mutationGuard,
+        projectId,
+        itemId,
+        expectedVersion: 3,
+      }).success,
     ).toBe(false);
   });
 
   it("permits nullable record fields to be cleared", () => {
     expect(
       updateProjectItemSchema.parse({
+        ...mutationGuard,
         projectId,
         itemId,
         expectedVersion: 3,
@@ -130,6 +218,7 @@ describe("updateProjectItemSchema", () => {
 describe("dependency schemas", () => {
   it("rejects self-referential dependencies", () => {
     const result = createDependencySchema.safeParse({
+      ...mutationGuard,
       projectId,
       fromItemId: itemId,
       toItemId: itemId,
@@ -145,6 +234,7 @@ describe("dependency schemas", () => {
   it("rejects unapproved dependency relationship values", () => {
     expect(
       createDependencySchema.safeParse({
+        ...mutationGuard,
         projectId,
         fromItemId: itemId,
         toItemId: otherItemId,
@@ -156,6 +246,7 @@ describe("dependency schemas", () => {
   it("accepts known dependency relationships and validates deletion identity", () => {
     expect(
       createDependencySchema.parse({
+        ...mutationGuard,
         projectId,
         fromItemId: itemId,
         toItemId: otherItemId,
@@ -163,9 +254,20 @@ describe("dependency schemas", () => {
         rationale: "The agenda must be approved first.",
       }),
     ).toMatchObject({ relationship: "requires" });
-    expect(deleteDependencySchema.safeParse({ projectId, dependencyId: itemId }).success).toBe(true);
     expect(
-      deleteDependencySchema.safeParse({ projectId, dependencyId: itemId, extra: true }).success,
+      deleteDependencySchema.safeParse({
+        ...mutationGuard,
+        projectId,
+        dependencyId: itemId,
+      }).success,
+    ).toBe(true);
+    expect(
+      deleteDependencySchema.safeParse({
+        ...mutationGuard,
+        projectId,
+        dependencyId: itemId,
+        extra: true,
+      }).success,
     ).toBe(false);
   });
 });

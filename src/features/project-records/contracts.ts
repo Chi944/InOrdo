@@ -5,14 +5,24 @@ import type { Tables } from "@/types/database";
 import type {
   CreateDependencyInput,
   CreateProjectItemInput,
+  DeleteDependencyInput,
   ListProjectItemsFilters,
   UpdateProjectItemInput,
 } from "@/features/project-records/schemas";
 
-export type ProjectItemPatch = Omit<
-  UpdateProjectItemInput,
-  "projectId" | "itemId" | "expectedVersion"
->;
+export type ProjectRecordMutationStatus = "succeeded" | "duplicate";
+
+export type ProjectRecordMutationResult<Record> = {
+  status: ProjectRecordMutationStatus;
+  workflowGeneration: number;
+  record: Record;
+};
+
+export type RemoveDependencyMutationResult = {
+  status: ProjectRecordMutationStatus;
+  workflowGeneration: number;
+  dependencyId: string;
+};
 
 export type ProjectItemPage = {
   items: Tables<"project_items">[];
@@ -21,7 +31,6 @@ export type ProjectItemPage = {
 };
 
 export type ProjectRecordAuthorization = {
-  userId: string;
   scope: AuthorizedProjectScope;
 };
 
@@ -34,40 +43,24 @@ export type ProjectRecordAuthorizer = (
 export interface ProjectRecordStore {
   createItem(
     scope: AuthorizedProjectScope,
-    userId: string,
     input: CreateProjectItemInput,
-  ): Promise<Tables<"project_items">>;
-  getItem(
-    scope: AuthorizedProjectScope,
-    itemId: string,
-  ): Promise<Tables<"project_items"> | null>;
+  ): Promise<ProjectRecordMutationResult<Tables<"project_items">>>;
   updateItem(
     scope: AuthorizedProjectScope,
-    itemId: string,
-    expectedVersion: number,
-    patch: ProjectItemPatch,
-  ): Promise<Tables<"project_items"> | null>;
+    input: UpdateProjectItemInput,
+  ): Promise<ProjectRecordMutationResult<Tables<"project_items">>>;
   listItems(
     scope: AuthorizedProjectScope,
     filters: ListProjectItemsFilters,
   ): Promise<ProjectItemPage>;
-  hasWorkspaceMember(
-    scope: AuthorizedProjectScope,
-    userId: string,
-  ): Promise<boolean>;
-  getProjectItemIds(
-    scope: AuthorizedProjectScope,
-    itemIds: readonly string[],
-  ): Promise<string[]>;
   createDependency(
     scope: AuthorizedProjectScope,
-    userId: string,
     input: CreateDependencyInput,
-  ): Promise<Tables<"item_dependencies">>;
+  ): Promise<ProjectRecordMutationResult<Tables<"item_dependencies">>>;
   removeDependency(
     scope: AuthorizedProjectScope,
-    dependencyId: string,
-  ): Promise<Tables<"item_dependencies"> | null>;
+    input: DeleteDependencyInput,
+  ): Promise<RemoveDependencyMutationResult>;
   listDependencies(
     scope: AuthorizedProjectScope,
   ): Promise<Tables<"item_dependencies">[]>;

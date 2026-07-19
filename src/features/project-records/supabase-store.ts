@@ -1,14 +1,14 @@
 import "server-only";
 
-import type {
-  ProjectItemPatch,
-  ProjectRecordStore,
-} from "@/features/project-records/contracts";
+import { z, type ZodType } from "zod";
+
+import type { ProjectRecordStore } from "@/features/project-records/contracts";
 import { mapProjectRecordDatabaseError } from "@/features/project-records/errors";
-import type { CreateProjectItemInput } from "@/features/project-records/schemas";
-import type { AuthorizedProjectScope } from "@/lib/auth/guards";
+import type {
+  CreateProjectItemInput,
+  UpdateProjectItemInput,
+} from "@/features/project-records/schemas";
 import type { ServerSupabaseClient } from "@/lib/supabase/server";
-import type { TablesInsert, TablesUpdate } from "@/types/database";
 
 export const projectRecordItemSelector =
   "id,workspace_id,project_id,item_key,item_type,title,description,status,priority,owner_id,start_date,due_date,event_date,metadata,version,is_demo_retired,created_by,created_at,updated_at" as const;
@@ -16,43 +16,136 @@ export const projectRecordItemSelector =
 export const dependencyRecordSelector =
   "id,workspace_id,project_id,from_item_id,to_item_id,relationship,rationale,created_by,created_at" as const;
 
-function itemInsert(
-  scope: AuthorizedProjectScope,
-  userId: string,
-  input: CreateProjectItemInput,
-): TablesInsert<"project_items"> {
+const itemTypes = [
+  "task",
+  "milestone",
+  "decision",
+  "event",
+  "risk",
+  "artifact",
+] as const;
+const itemStatuses = [
+  "not_started",
+  "in_progress",
+  "blocked",
+  "at_risk",
+  "completed",
+  "cancelled",
+] as const;
+const itemPriorities = ["low", "medium", "high", "critical"] as const;
+const dependencyRelationships = [
+  "depends_on",
+  "requires",
+  "informs",
+  "scheduled_by",
+] as const;
+
+const projectItemRowSchema = z.strictObject({
+  id: z.uuid(),
+  workspace_id: z.uuid(),
+  project_id: z.uuid(),
+  item_key: z.string().min(4).max(64),
+  item_type: z.enum(itemTypes),
+  title: z.string().min(1).max(240),
+  description: z.string().nullable(),
+  status: z.enum(itemStatuses),
+  priority: z.enum(itemPriorities),
+  owner_id: z.uuid().nullable(),
+  start_date: z.iso.date().nullable(),
+  due_date: z.iso.date().nullable(),
+  event_date: z.iso.date().nullable(),
+  metadata: z.json(),
+  version: z.number().int().positive(),
+  is_demo_retired: z.boolean(),
+  created_by: z.uuid(),
+  created_at: z.string().min(1),
+  updated_at: z.string().min(1),
+});
+
+const dependencyRowSchema = z.strictObject({
+  id: z.uuid(),
+  workspace_id: z.uuid(),
+  project_id: z.uuid(),
+  from_item_id: z.uuid(),
+  to_item_id: z.uuid(),
+  relationship: z.enum(dependencyRelationships),
+  rationale: z.string().nullable(),
+  created_by: z.uuid(),
+  created_at: z.string().min(1),
+});
+
+const mutationStatusSchema = z.enum(["succeeded", "duplicate"]);
+const workflowGenerationSchema = z
+  .number()
+  .int()
+  .positive()
+  .max(Number.MAX_SAFE_INTEGER);
+const itemMutationResultSchema = z.strictObject({
+  status: mutationStatusSchema,
+  workflow_generation: workflowGenerationSchema,
+  item: projectItemRowSchema,
+});
+const dependencyMutationResultSchema = z.strictObject({
+  status: mutationStatusSchema,
+  workflow_generation: workflowGenerationSchema,
+  dependency: dependencyRowSchema,
+});
+const removeDependencyResultSchema = z.strictObject({
+  status: mutationStatusSchema,
+  workflow_generation: workflowGenerationSchema,
+  dependency_id: z.uuid(),
+});
+
+type RpcResult = {
+  data: unknown;
+  error: {
+    code?: string | null;
+    message?: string | null;
+    details?: string | null;
+    hint?: string | null;
+  } | null;
+};
+
+async function executeMutationRpc<Result>(
+  request: PromiseLike<RpcResult>,
+  schema: ZodType<Result>,
+): Promise<Result> {
+  const { data, error } = await request;
+  if (error) throw mapProjectRecordDatabaseError(error);
+
+  const parsed = schema.safeParse(data);
+  if (!parsed.success) throw mapProjectRecordDatabaseError({});
+  return parsed.data;
+}
+
+function createItemPayload(input: CreateProjectItemInput) {
   return {
-    workspace_id: scope.workspaceId,
-    project_id: scope.projectId,
     item_key: input.itemKey,
     item_type: input.itemType,
     title: input.title,
-    description: input.description,
+    description: input.description ?? null,
     status: input.status,
     priority: input.priority,
-    owner_id: input.ownerId,
-    start_date: input.startDate,
-    due_date: input.dueDate,
-    event_date: input.eventDate,
-    created_by: userId,
+    owner_id: input.ownerId ?? null,
+    start_date: input.startDate ?? null,
+    due_date: input.dueDate ?? null,
+    event_date: input.eventDate ?? null,
   };
 }
 
-function itemUpdate(patch: ProjectItemPatch): TablesUpdate<"project_items"> {
-  const update: TablesUpdate<"project_items"> = {};
-
-  if (patch.itemKey !== undefined) update.item_key = patch.itemKey;
-  if (patch.itemType !== undefined) update.item_type = patch.itemType;
-  if (patch.title !== undefined) update.title = patch.title;
-  if (patch.description !== undefined) update.description = patch.description;
-  if (patch.status !== undefined) update.status = patch.status;
-  if (patch.priority !== undefined) update.priority = patch.priority;
-  if (patch.ownerId !== undefined) update.owner_id = patch.ownerId;
-  if (patch.startDate !== undefined) update.start_date = patch.startDate;
-  if (patch.dueDate !== undefined) update.due_date = patch.dueDate;
-  if (patch.eventDate !== undefined) update.event_date = patch.eventDate;
-
-  return update;
+function updateItemPatch(input: UpdateProjectItemInput) {
+  const patch: Record<string, string | null> = {};
+  if (input.itemKey !== undefined) patch.item_key = input.itemKey;
+  if (input.itemType !== undefined) patch.item_type = input.itemType;
+  if (input.title !== undefined) patch.title = input.title;
+  if (input.description !== undefined) patch.description = input.description;
+  if (input.status !== undefined) patch.status = input.status;
+  if (input.priority !== undefined) patch.priority = input.priority;
+  if (input.ownerId !== undefined) patch.owner_id = input.ownerId;
+  if (input.startDate !== undefined) patch.start_date = input.startDate;
+  if (input.dueDate !== undefined) patch.due_date = input.dueDate;
+  if (input.eventDate !== undefined) patch.event_date = input.eventDate;
+  return patch;
 }
 
 function escapeLike(value: string) {
@@ -63,45 +156,40 @@ export function createSupabaseProjectRecordStore(
   client: ServerSupabaseClient,
 ): ProjectRecordStore {
   return {
-    async createItem(scope, userId, input) {
-      const { data, error } = await client
-        .from("project_items")
-        .insert(itemInsert(scope, userId, input))
-        .select(projectRecordItemSelector)
-        .single();
-
-      if (error) throw mapProjectRecordDatabaseError(error);
-      return data;
+    async createItem(scope, input) {
+      const result = await executeMutationRpc(
+        client.rpc("mutate_project_item_create", {
+          p_project_id: scope.projectId,
+          p_expected_workflow_generation: input.expectedWorkflowGeneration,
+          p_idempotency_key: input.idempotencyKey,
+          p_payload: createItemPayload(input),
+        }),
+        itemMutationResultSchema,
+      );
+      return {
+        status: result.status,
+        workflowGeneration: result.workflow_generation,
+        record: result.item,
+      };
     },
 
-    async getItem(scope, itemId) {
-      const { data, error } = await client
-        .from("project_items")
-        .select(projectRecordItemSelector)
-        .eq("workspace_id", scope.workspaceId)
-        .eq("project_id", scope.projectId)
-        .eq("id", itemId)
-        .eq("is_demo_retired", false)
-        .maybeSingle();
-
-      if (error) throw mapProjectRecordDatabaseError(error);
-      return data;
-    },
-
-    async updateItem(scope, itemId, expectedVersion, patch) {
-      const { data, error } = await client
-        .from("project_items")
-        .update(itemUpdate(patch))
-        .eq("workspace_id", scope.workspaceId)
-        .eq("project_id", scope.projectId)
-        .eq("id", itemId)
-        .eq("version", expectedVersion)
-        .eq("is_demo_retired", false)
-        .select(projectRecordItemSelector)
-        .maybeSingle();
-
-      if (error) throw mapProjectRecordDatabaseError(error);
-      return data;
+    async updateItem(scope, input) {
+      const result = await executeMutationRpc(
+        client.rpc("mutate_project_item_update", {
+          p_project_id: scope.projectId,
+          p_item_id: input.itemId,
+          p_expected_version: input.expectedVersion,
+          p_expected_workflow_generation: input.expectedWorkflowGeneration,
+          p_idempotency_key: input.idempotencyKey,
+          p_patch: updateItemPatch(input),
+        }),
+        itemMutationResultSchema,
+      );
+      return {
+        status: result.status,
+        workflowGeneration: result.workflow_generation,
+        record: result.item,
+      };
     },
 
     async listItems(scope, filters) {
@@ -139,65 +227,43 @@ export function createSupabaseProjectRecordStore(
       };
     },
 
-    async hasWorkspaceMember(scope, userId) {
-      const { data, error } = await client
-        .from("workspace_members")
-        .select("user_id")
-        .eq("workspace_id", scope.workspaceId)
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (error) throw mapProjectRecordDatabaseError(error);
-      return data !== null;
-    },
-
-    async getProjectItemIds(scope, itemIds) {
-      const uniqueIds = [...new Set(itemIds)];
-      const { data, error } = await client
-        .from("project_items")
-        .select("id")
-        .eq("workspace_id", scope.workspaceId)
-        .eq("project_id", scope.projectId)
-        .eq("is_demo_retired", false)
-        .in("id", uniqueIds)
-        .order("id");
-
-      if (error) throw mapProjectRecordDatabaseError(error);
-      return (data ?? []).map((item) => item.id);
-    },
-
-    async createDependency(scope, userId, input) {
-      const insert: TablesInsert<"item_dependencies"> = {
-        workspace_id: scope.workspaceId,
-        project_id: scope.projectId,
-        from_item_id: input.fromItemId,
-        to_item_id: input.toItemId,
-        relationship: input.relationship,
-        rationale: input.rationale,
-        created_by: userId,
+    async createDependency(scope, input) {
+      const result = await executeMutationRpc(
+        client.rpc("mutate_project_dependency_create", {
+          p_project_id: scope.projectId,
+          p_expected_workflow_generation: input.expectedWorkflowGeneration,
+          p_idempotency_key: input.idempotencyKey,
+          p_payload: {
+            from_item_id: input.fromItemId,
+            to_item_id: input.toItemId,
+            relationship: input.relationship,
+            rationale: input.rationale ?? null,
+          },
+        }),
+        dependencyMutationResultSchema,
+      );
+      return {
+        status: result.status,
+        workflowGeneration: result.workflow_generation,
+        record: result.dependency,
       };
-      const { data, error } = await client
-        .from("item_dependencies")
-        .insert(insert)
-        .select(dependencyRecordSelector)
-        .single();
-
-      if (error) throw mapProjectRecordDatabaseError(error);
-      return data;
     },
 
-    async removeDependency(scope, dependencyId) {
-      const { data, error } = await client
-        .from("item_dependencies")
-        .delete()
-        .eq("workspace_id", scope.workspaceId)
-        .eq("project_id", scope.projectId)
-        .eq("id", dependencyId)
-        .select(dependencyRecordSelector)
-        .maybeSingle();
-
-      if (error) throw mapProjectRecordDatabaseError(error);
-      return data;
+    async removeDependency(scope, input) {
+      const result = await executeMutationRpc(
+        client.rpc("mutate_project_dependency_remove", {
+          p_project_id: scope.projectId,
+          p_dependency_id: input.dependencyId,
+          p_expected_workflow_generation: input.expectedWorkflowGeneration,
+          p_idempotency_key: input.idempotencyKey,
+        }),
+        removeDependencyResultSchema,
+      );
+      return {
+        status: result.status,
+        workflowGeneration: result.workflow_generation,
+        dependencyId: result.dependency_id,
+      };
     },
 
     async listDependencies(scope) {
