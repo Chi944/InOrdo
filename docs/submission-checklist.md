@@ -10,12 +10,13 @@ Use this as the final human handoff. Check an item only after testing the exact 
 - [x] The repository contains an MIT `LICENSE` file.
 - [x] The repository contains architecture, demo, security, QA, and Codex implementation evidence.
 - [x] The implementation log contains summaries only and no private Codex transcript or fabricated Session ID.
+- [x] The reviewed/deployed application release is `d581b0a9d736bd12046a4314e15b359ec8fd8205` at `https://inordo-hackathon.vercel.app`.
 
 ## Required public assets and access
 
-- [ ] Confirm `https://github.com/Chi944/InOrdo-Hackathon` opens without a team-authenticated GitHub session and exposes the intended final commit.
-- [ ] Confirm the public repository includes the MIT license and no secret, credential, environment value, private data, or private transcript.
-- [ ] Confirm `https://inordo-hackathon.vercel.app` opens in a private/incognito window and points to the final submitted commit.
+- [x] An unauthenticated GitHub API/raw-file check confirmed `https://github.com/Chi944/InOrdo-Hackathon` is public, defaults to `main`, and exposes application SHA `d581b0a9d736bd12046a4314e15b359ec8fd8205`.
+- [x] The public MIT license and README return `200`; the full-repository release review plus a current/all-history credential-format scan found no secret, unexpected tracked environment file, private data, or private transcript.
+- [x] An unauthenticated production check confirmed `https://inordo-hackathon.vercel.app` returns `200`, while Vercel metadata reports the recorded application release SHA and Node `22.x` deployment as `READY`.
 - [ ] Confirm the README renders correctly on the public repository, including Mermaid, screenshots/GIFs, setup instructions, known limitations, and links.
 - [x] Confirm the checked-in landing and workflow-principle screenshots come from the real public route, include descriptive alt text, and make no authenticated or live-model claim.
 - [ ] Capture a final protected-workspace screenshot or short GIF only after authenticated production QA; label synthetic data and do not present a fixture as live GPT-5.6 output.
@@ -41,7 +42,7 @@ Use this as the final human handoff. Check an item only after testing the exact 
 - [ ] Supabase migration, seed, generated-type, and demo-user steps match the checked-in files and do not imply that the seed creates credentials.
 - [ ] `npm ci`, local development, production build, and test commands have been followed from a clean checkout.
 - [ ] Repository structure and actual routes match the final tree.
-- [ ] Deployment instructions name `<DEPLOYMENT_PLATFORM_OR_PROJECT>` only after the final platform is confirmed.
+- [x] Deployment instructions name the confirmed manual Vercel Hobby project `chi944s-projects/inordo-hackathon` and no alternate hosting path.
 
 ## Final QA gate
 
@@ -63,26 +64,27 @@ Use this as the final human handoff. Check an item only after testing the exact 
 ## Team, deadline, and final lock
 
 - [ ] Replace `<TEAM_MEMBER_NAMES_AND_ROLES>` with the exact public team-member names and roles approved by the team.
-- [ ] Replace `<FINAL_SUBMISSION_DEADLINE_WITH_TIMEZONE>` with the official deadline and timezone from the event source of truth.
-- [ ] After the final commit exists, record its SHA in the external submission notes and confirm the deployment and Devpost reference that artifact; do not create a circular self-referential commit just to embed its own SHA.
+- [x] Confirmed from the [official Devpost schedule](https://openai.devpost.com/details/dates): submissions close July 21, 2026 at 5:00 PM PDT (July 22, 2026 at 8:00 AM SGT).
+- [ ] After the final repository commit exists, record its SHA in the external submission notes and make Devpost reference it. Separately confirm production still identifies the recorded application release SHA; do not create a circular self-referential commit merely to embed either SHA.
 - [ ] Submit before the official deadline.
 - [ ] After the deadline, make **no edits** to the submitted repository branch/commit, production artifact, Devpost entry, or public video unless the event rules explicitly permit them.
 
 ## Placeholder inventory
 
-Replace every submission token below before publishing. Search with `rg -n '<(PRODUCTION_URL|DEPLOYMENT_PLATFORM_OR_PROJECT|DEVPOST_URL|PUBLIC_YOUTUBE_VIDEO_URL|DEMO_ACCESS_INSTRUCTIONS_OR_TEST_PATH|PRIMARY_FEEDBACK_SESSION_ID|TEAM_MEMBER_NAMES_AND_ROLES|FINAL_SUBMISSION_DEADLINE_WITH_TIMEZONE)>' README.md docs` and resolve every result intentionally.
+Replace every remaining submission token below before publishing. Search with `rg -n '<(DEVPOST_URL|PUBLIC_YOUTUBE_VIDEO_URL|DEMO_ACCESS_INSTRUCTIONS_OR_TEST_PATH|PRIMARY_FEEDBACK_SESSION_ID|TEAM_MEMBER_NAMES_AND_ROLES)>' README.md docs` and resolve every result intentionally.
 
 | Placeholder | Human-supplied value | Verification |
 | --- | --- | --- |
 | Public repository | `https://github.com/Chi944/InOrdo-Hackathon` | Open signed out and confirm the final intended commit and README are visible. |
-| `https://inordo-hackathon.vercel.app` | Final deployed application URL. | Open incognito and run the production checklist. |
-| `<DEPLOYMENT_PLATFORM_OR_PROJECT>` | Confirmed hosting platform/project description, without secret identifiers. | Compare with the actual deployed project. |
+| Production application | `https://inordo-hackathon.vercel.app` | Open incognito and run the production checklist. |
+| Hosting platform/project | Manual Vercel Hobby project `chi944s-projects/inordo-hackathon` | Confirm the project remains manually deployed with no Git-connected automatic deployment. |
+| Deployed application SHA | `d581b0a9d736bd12046a4314e15b359ec8fd8205` | Compare the public deployment metadata and final submission reference. |
 | `<DEVPOST_URL>` | Final public Devpost entry. | Open signed out after submission. |
 | `<PUBLIC_YOUTUBE_VIDEO_URL>` | Public voiceover video URL, duration at most 3:00. | Play signed out and compare against the final build. |
 | `<DEMO_ACCESS_INSTRUCTIONS_OR_TEST_PATH>` | Judge-safe test path or separately delivered account instructions; never a committed password. | Follow from a private browser with the approved access method. |
 | `<PRIMARY_FEEDBACK_SESSION_ID>` | Identifier returned by the primary `/feedback` command. | Confirm the exact ID; do not attach a private transcript. |
 | `<TEAM_MEMBER_NAMES_AND_ROLES>` | Exact public team-member names and roles. | Cross-check the team’s event registration. |
-| `<FINAL_SUBMISSION_DEADLINE_WITH_TIMEZONE>` | Official deadline with timezone. | Cross-check the event source of truth. |
+| Submission deadline | July 21, 2026 at 5:00 PM PDT (July 22, 2026 at 8:00 AM SGT). | Confirmed against the official Devpost schedule. |
 
 Two setup examples are deliberately not submission fields: `<SUPABASE_PROJECT_REF>` in README and `<AUTH_USER_UUID>` in `docs/demo-user-setup.md`. Replace them only in a local command or reviewed dashboard query when configuring an environment. Do not commit a real Auth UUID, credential, or environment value merely to remove an instructional placeholder.
 
