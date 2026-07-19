@@ -168,6 +168,14 @@
 - Local migration replay, database lint, rollback-wrapped `verify_p0.sql`, `verify_analysis_pipeline.sql`, and `verify_operations.sql`, plus the focused `verify_prompt13_evidence_integrity.sql` verifier passed after correction. No linked/remote migration, provider call, browser, or production claim is made here.
 - The exact branch also passed Node 22.23.1/npm 10.9.8 lint, typecheck, 360 Vitest tests across 55 files, the production build, whitespace verification, generated-type comparison, and a clean local-public-schema migration diff.
 
+## 2026-07-19 — Prompt 13 approval-contract integrity
+
+- Reproduced two final-review defects: individually valid date updates could form an invalid selected set, and create-item approval surfaces hid fields that the database would commit.
+- Added application and database set-level guards for duplicate target-field updates and incompatible same-target date candidates. The database guard serializes on the proposal row, and a local two-session race committed one candidate while rejecting the conflicting insert.
+- Added a typed eight-field create-item disclosure shared by the action card and confirmation dialog. Successful operation receipts now replace caller data with a version-2 snapshot built from the committed item; the applied result and audit history render the same fields without rewriting legacy history.
+- Kept task/risk creation deliberately nonreversible. The rollback plan uses route containment and forward-only correction; it never edits proposal actions, operation receipts, item versions, or the migration ledger.
+- Clean local migration replay, schema lint, all rollback-wrapped SQL suites, focused Node 22 red/green tests, and the exact actual-apply receipt assertion passed. No linked/remote migration, provider call, Auth browser flow, or production claim is made by this entry.
+
 ## Codex work-package commit index
 
 The implementation entries above correspond to these Git commits. Merge commits are omitted except for the final reviewed release identity.

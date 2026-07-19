@@ -330,6 +330,56 @@ function validateAction(
   }
 }
 
+function validateRecoveryActionSet(
+  actions: readonly ValidatedRecoveryAction[],
+) {
+  const updatedFieldsByTarget = new Map<
+    string,
+    Set<ValidatedChange["field"]>
+  >();
+  const dateCandidatesByTarget = new Map<
+    string,
+    { startDates: string[]; dueDates: string[] }
+  >();
+
+  for (const action of actions) {
+    if (action.type !== "update_item_field") continue;
+
+    const updatedFields =
+      updatedFieldsByTarget.get(action.targetItemId) ?? new Set();
+    if (updatedFields.has(action.field)) throw invalidModelOutput();
+    updatedFields.add(action.field);
+    updatedFieldsByTarget.set(action.targetItemId, updatedFields);
+
+    if (action.field !== "start_date" && action.field !== "due_date") {
+      continue;
+    }
+    if (action.proposedValue === null) continue;
+    if (typeof action.proposedValue !== "string") throw invalidModelOutput();
+
+    const dateCandidates = dateCandidatesByTarget.get(action.targetItemId) ?? {
+      startDates: [],
+      dueDates: [],
+    };
+    if (action.field === "start_date") {
+      dateCandidates.startDates.push(action.proposedValue);
+    } else {
+      dateCandidates.dueDates.push(action.proposedValue);
+    }
+    dateCandidatesByTarget.set(action.targetItemId, dateCandidates);
+  }
+
+  for (const dateCandidates of dateCandidatesByTarget.values()) {
+    if (
+      dateCandidates.startDates.some((startDate) =>
+        dateCandidates.dueDates.some((dueDate) => startDate > dueDate),
+      )
+    ) {
+      throw invalidModelOutput();
+    }
+  }
+}
+
 export function validateRecoveryProposal(
   proposal: RecoveryProposal,
   change: ValidatedChange,
@@ -361,13 +411,16 @@ export function validateRecoveryProposal(
   ]);
 
   try {
+    const actions = proposal.actions.map((action) =>
+      validateAction(action, context, allowedItemIds),
+    );
+    validateRecoveryActionSet(actions);
+
     return {
       title: proposal.title,
       rationale: proposal.rationale,
       impacts,
-      actions: proposal.actions.map((action) =>
-        validateAction(action, context, allowedItemIds),
-      ),
+      actions,
     };
   } catch (error) {
     if (error instanceof AnalysisError) throw error;

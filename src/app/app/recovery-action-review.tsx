@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import type {
+  CreateItemCommitField,
   RecoveryAction,
   RecoveryProposal,
 } from "@/app/app/impact-workflow-types";
@@ -73,6 +74,60 @@ function confidenceLabel(confidence: number | null) {
 
 function humanize(value: string) {
   return value.replaceAll("_", " ");
+}
+
+function commitFieldLabel(field: CreateItemCommitField["field"]) {
+  switch (field) {
+    case "item_type":
+      return "Item type";
+    case "title":
+      return "Title";
+    case "description":
+      return "Description";
+    case "status":
+      return "Status";
+    case "priority":
+      return "Priority";
+    case "owner_id":
+      return "Owner ID";
+    case "start_date":
+      return "Start date";
+    case "due_date":
+      return "Due date";
+  }
+}
+
+function commitFieldValue(field: CreateItemCommitField) {
+  if (field.value === null) return "Not set";
+  return field.field === "item_type" ||
+    field.field === "status" ||
+    field.field === "priority"
+    ? humanize(field.value)
+    : field.value;
+}
+
+export function CreateItemCommitFieldList({
+  fields,
+}: {
+  fields: CreateItemCommitField[];
+}) {
+  return (
+    <dl
+      aria-label="Create-item commit fields"
+      className="mt-3 grid gap-2 border-t border-rule pt-3 sm:grid-cols-2"
+    >
+      {fields.map((field) => (
+        <div className="min-w-0" key={field.field}>
+          <dt className="font-mono text-[0.56rem] uppercase tracking-[0.09em] text-muted">
+            {commitFieldLabel(field.field)}
+          </dt>
+          <dd className="mt-0.5 break-words text-xs font-medium leading-5 text-ink [overflow-wrap:anywhere]">
+            {commitFieldValue(field)}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
 }
 
 function actionMayBeUndoEligible(action: RecoveryAction) {
@@ -219,6 +274,9 @@ function ActionCard({
               <p className="mt-1 break-words text-sm font-medium text-ink [overflow-wrap:anywhere]">
                 {action.proposedValue}
               </p>
+              {action.commitFields?.length ? (
+                <CreateItemCommitFieldList fields={action.commitFields} />
+              ) : null}
             </div>
           </div>
 
@@ -688,10 +746,13 @@ export function RecoveryActionReview({
             {selectedActions.map((action) => (
               <li className="flex gap-3 py-3 text-sm" key={action.id}>
                 <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-green-700" />
-                <span>
+                <div className="min-w-0 flex-1">
                   <span className="font-semibold text-ink">{action.title}</span>
                   <span className="mt-0.5 block text-muted">{action.proposedValue}</span>
-                </span>
+                  {action.commitFields?.length ? (
+                    <CreateItemCommitFieldList fields={action.commitFields} />
+                  ) : null}
+                </div>
               </li>
             ))}
           </ol>

@@ -12,6 +12,10 @@ import type {
 } from "@/app/app/impact-workflow-types";
 import { listOperationHistory } from "@/features/operations/history";
 import type { AuthorizedProjectScope } from "@/lib/auth/guards";
+import {
+  createItemProposalCommitFields,
+  createItemReceiptCommitFields,
+} from "@/lib/repositories/create-item-commit-fields";
 import type { ServerSupabaseClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 
@@ -182,6 +186,7 @@ function actionView(
   if (promptType === "create_task" || promptType === "create_risk") {
     const itemType = promptType === "create_task" ? "Task" : "Risk";
     const title = stringValue(payload.title) ?? `Untitled ${itemType.toLowerCase()}`;
+    const commitFields = createItemProposalCommitFields(payload);
     return {
       id: row.id,
       ordinal: row.ordinal,
@@ -190,6 +195,7 @@ function actionView(
       title: `Create ${itemType.toLowerCase()}: ${title}`,
       currentValue: "No existing item",
       proposedValue: `${itemType} — ${title}`,
+      ...(commitFields.length > 0 ? { commitFields } : {}),
       reason: row.rationale,
       linkedImpactItemId,
       linkedImpactLabel: linkedItem
@@ -469,6 +475,7 @@ function operationItemView(
 ): OperationAuditItem {
   const itemId = stringValue(row.item_id);
   const action = isRecord(row.action) ? row.action : null;
+  const commitFields = createItemReceiptCommitFields(row.after_state);
   return {
     id: stringValue(row.id) ?? "unavailable-operation-item",
     ordinal: numberValue(row.ordinal) ?? 0,
@@ -487,6 +494,7 @@ function operationItemView(
     reason: action ? stringValue(action.rationale) : null,
     beforeValue: jsonValueLabel(row.before_state),
     afterValue: jsonValueLabel(row.after_state),
+    ...(commitFields.length > 0 ? { commitFields } : {}),
     reversible: booleanValue(row.reversible),
     errorCode: stringValue(row.error_code),
   };
