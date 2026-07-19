@@ -39,6 +39,7 @@ import {
 } from "@/app/app/operation-idempotency";
 import {
   type ApplyResult,
+  CreateItemCommitFieldList,
   RecoveryActionReview,
 } from "@/app/app/recovery-action-review";
 import {
@@ -653,6 +654,9 @@ function AppliedResult({
                       <div>
                         <p className="font-mono text-[0.6rem] uppercase tracking-[0.1em] text-muted">After</p>
                         <p className="mt-1 break-words text-sm text-ink [overflow-wrap:anywhere]">{item.afterValue}</p>
+                        {item.commitFields?.length ? (
+                          <CreateItemCommitFieldList fields={item.commitFields} />
+                        ) : null}
                       </div>
                     </article>
                   ))}
@@ -738,6 +742,23 @@ function AuditHistory({ operations, failed }: { operations: OperationSummary[]; 
                     {operation.items.length} item-level {operation.items.length === 1 ? "record" : "records"} · {operation.initiatorName ?? "Authenticated actor"}
                     {operation.reversesOperationId ? ` · Reverses ${operation.reversesOperationId}` : ""}
                   </p>
+                  {operation.items.some((item) => item.commitFields?.length) ? (
+                    <div className="mt-3 grid gap-3">
+                      {operation.items.map((item) =>
+                        item.commitFields?.length ? (
+                          <div
+                            className="border-l-2 border-rule bg-paper px-3 py-2"
+                            key={item.id}
+                          >
+                            <p className="break-words text-sm font-semibold text-ink [overflow-wrap:anywhere]">
+                              {item.itemLabel}
+                            </p>
+                            <CreateItemCommitFieldList fields={item.commitFields} />
+                          </div>
+                        ) : null,
+                      )}
+                    </div>
+                  ) : null}
                 </div>
                 <time className="font-mono text-xs text-muted" dateTime={operation.completedAt}>{dateTimeLabel(operation.completedAt)}</time>
               </li>

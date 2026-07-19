@@ -719,6 +719,36 @@ begin
      or (select count(*) from public.operation_items
          where operation_id = (create_result ->> 'operation_id')::uuid
            and not reversible) <> 2
+     or (
+       select pg_catalog.count(*)
+       from public.operation_items as operation_item
+       join public.project_items as item
+         on item.workspace_id = operation_item.workspace_id
+        and item.project_id = operation_item.project_id
+        and item.id = operation_item.item_id
+       where operation_item.operation_id
+         = (create_result ->> 'operation_id')::uuid
+         and operation_item.proposal_action_id in (
+           '92000000-0000-4000-8000-000000000004'::uuid,
+           '92000000-0000-4000-8000-000000000005'::uuid
+         )
+         and operation_item.after_state = pg_catalog.jsonb_build_object(
+           'receipt_version', 2,
+           'item_id', item.id,
+           'item_key', item.item_key,
+           'version', item.version,
+           'create_payload', pg_catalog.jsonb_build_object(
+             'item_type', item.item_type,
+             'title', item.title,
+             'description', item.description,
+             'status', item.status,
+             'priority', item.priority,
+             'owner_id', item.owner_id,
+             'start_date', item.start_date,
+             'due_date', item.due_date
+           )
+         )
+     ) <> 2
      or not exists (
        select 1 from public.project_items
        where project_id = '20000000-0000-4000-8000-000000000001'::uuid

@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -38,6 +38,58 @@ const data: ImpactWorkflowData = {
   ],
   operationsLoadFailed: false,
 };
+
+const createOperationData = {
+  analysis: null,
+  analysisLoadFailed: false,
+  operations: [
+    {
+      id: "d1669e0f-604c-4ec2-8ff1-717b2a4d5103",
+      operationType: "apply_proposal",
+      state: "succeeded",
+      proposalId: "5bf63e7d-c8db-4c2d-a3cc-20107cb91503",
+      reversesOperationId: null,
+      initiatorName: "Demo owner",
+      createdAt: "2026-07-20T10:00:00.000Z",
+      completedAt: "2026-07-20T10:00:01.000Z",
+      reversible: false,
+      undoEligible: false,
+      errorCode: null,
+      items: [
+        {
+          id: "78915e0f-604c-4ec2-8ff1-717b2a4d5103",
+          ordinal: 1,
+          state: "succeeded",
+          itemId: "21d4e760-f552-43d4-bf6a-000000000003",
+          itemLabel: "TSK-11 — Reconfirm catering",
+          actionType: "create_item",
+          reason: "Protect the supplier cutoff.",
+          beforeValue: "Not set",
+          afterValue: "TSK-11 — Reconfirm catering",
+          commitFields: [
+            { field: "item_type", value: "task" },
+            { field: "title", value: "Reconfirm catering" },
+            {
+              field: "description",
+              value: "Call the venue before the supplier cutoff.",
+            },
+            { field: "status", value: "not_started" },
+            { field: "priority", value: "high" },
+            {
+              field: "owner_id",
+              value: "6519012e-13a6-4e3e-9ae5-d09bd3054401",
+            },
+            { field: "start_date", value: "2026-08-01" },
+            { field: "due_date", value: "2026-08-05" },
+          ],
+          reversible: false,
+          errorCode: null,
+        },
+      ],
+    },
+  ],
+  operationsLoadFailed: false,
+} as const satisfies ImpactWorkflowData;
 
 beforeEach(() => {
   vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
@@ -112,5 +164,32 @@ describe("impact workflow undo", () => {
     expect(keys[1]).toBe(keys[2]);
     expect(keys[2]).toBe(keys[3]);
     expect(router.refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the full create receipt in the applied result and audit history", () => {
+    render(
+      <ImpactWorkflow
+        data={createOperationData}
+        projectId={projectId}
+        role="owner"
+        syntheticWorkspace={false}
+      />,
+    );
+
+    for (const regionId of ["applied-result", "audit-history"]) {
+      const region = within(document.getElementById(regionId) as HTMLElement);
+      for (const value of [
+        "task",
+        "Reconfirm catering",
+        "Call the venue before the supplier cutoff.",
+        "not started",
+        "high",
+        "6519012e-13a6-4e3e-9ae5-d09bd3054401",
+        "2026-08-01",
+        "2026-08-05",
+      ]) {
+        expect(region.getByText(value, { exact: true })).toBeVisible();
+      }
+    }
   });
 });

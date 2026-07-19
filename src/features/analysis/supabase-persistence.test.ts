@@ -379,6 +379,27 @@ describe("Supabase analysis persistence", () => {
         },
       },
     });
+    const completionPayload = args.p_result as {
+      proposal: { actions: Array<Record<string, unknown>> };
+    };
+    expect(completionPayload.proposal.actions[1]).toEqual({
+      target_item_id: null,
+      expected_item_version: null,
+      payload: {
+        prompt_action_type: "create_task",
+        item_type: "task",
+        title: "Confirm the revised pack date",
+        description: null,
+        priority: "high",
+        owner_id: ownerId,
+        start_date: null,
+        due_date: "2026-08-12",
+        linked_impact_item_id: impactedItemId,
+        confidence: 0.82,
+        requires_human_input: false,
+      },
+      rationale: "Get an explicit confirmation.",
+    });
     expect(JSON.stringify(args)).not.toContain(sourceText);
     expect(JSON.stringify(args)).not.toContain("execute_sql");
   });

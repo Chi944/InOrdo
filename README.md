@@ -124,7 +124,9 @@ The model has no tools and no direct database path. It does not choose graph rea
 - A generated proposal is inert; model output never grants permission.
 - Owner/admin authorization and current project state are rechecked before the privileged operation executor is initialized.
 - Reviewers submit explicit action IDs and any required human responses. Unselected actions remain pending.
+- Duplicate target-field updates and contradictory same-target start/due proposals are rejected in application postvalidation and again by a serialized database guard.
 - Only allowlisted field updates, constrained task/risk creation, and confirmation activity can execute.
+- Create-item cards and the final confirmation show every bounded field that will be committed; successful audit receipts are rebuilt from the committed row rather than trusted proposal/caller JSON.
 - Selected actions, mutations, proposal transitions, and ordered before/after audit records commit in one transaction or none do.
 - An undo is a new compensating operation linked to the original; history is not erased.
 - Undo is available only when every mutating action in the original operation is a reversible field update and current state still matches the recorded after-state.
@@ -240,6 +242,8 @@ npx --no-install supabase db reset
 Analysis claims have an immutable three-minute database lease. An active exact duplicate returns `202` with `Retry-After`; submit that exact update again after the displayed delay to reconcile an interrupted claim. Expiry never starts another model attempt: the same request becomes a safe terminal failure, while a late success and all of its derived writes are rejected atomically.
 
 The Prompt 13 evidence-integrity bridge keeps one canonical revision/hash analysis claim for provider-spend control while retaining append-only links to every attributable source capture. Exact replays preserve claim/link cardinality, while the same capture can support a fresh claim after the project revision changes. Ready proposals close when any project item or dependency changes; historic live proposals are conservatively closed rather than reopened. On Windows, run the focused verifier against the started local stack after a reset with `Get-Content supabase/tests/verify_prompt13_evidence_integrity.sql -Raw | docker exec -i supabase_db_InOrdo-Hackathon psql -X -q -v ON_ERROR_STOP=1 -U postgres -d postgres`.
+
+Approval-integrity migration `20260719130000_harden_approval_action_integrity` rejects ambiguous duplicate updates and incompatible date-action sets before they can become approvable. It also records versioned create-item receipts from the actual committed row while preserving legacy append-only receipts. The focused local verifiers are `supabase/tests/verify_proposal_action_integrity.sql` and `supabase/tests/verify_create_item_receipts.sql`; run them through the same rollback-wrapped local `psql` pattern after `supabase db reset`.
 
 ## Run, test, and build commands
 

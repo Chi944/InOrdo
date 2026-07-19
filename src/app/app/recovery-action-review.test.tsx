@@ -45,6 +45,22 @@ const actions: RecoveryAction[] = [
     title: "Create task: Reconfirm catering",
     currentValue: "No existing item",
     proposedValue: "Task — Reconfirm catering",
+    commitFields: [
+      { field: "item_type", value: "task" },
+      { field: "title", value: "Reconfirm catering" },
+      {
+        field: "description",
+        value: "Call the venue before the supplier cutoff.",
+      },
+      { field: "status", value: "not_started" },
+      { field: "priority", value: "high" },
+      {
+        field: "owner_id",
+        value: "6519012e-13a6-4e3e-9ae5-d09bd3054401",
+      },
+      { field: "start_date", value: "2026-08-01" },
+      { field: "due_date", value: "2026-08-05" },
+    ],
     reason: "The event date affects the catering booking.",
     linkedImpactItemId: "b993a2d1-8060-4c96-a7d0-e79f4cd43304",
     linkedImpactLabel: "TSK-02 — Catering booking",
@@ -180,6 +196,57 @@ describe("recovery action selection", () => {
       /entire operation cannot be undone because 1 selected action is nonreversible/i,
     );
     expect(dialog).toHaveTextContent(/separate reviewed forward action/i);
+  });
+
+  it("shows every committed create-item field on the card and in final review", async () => {
+    const user = userEvent.setup();
+    render(
+      <RecoveryActionReview
+        canApprove
+        onApplied={vi.fn()}
+        projectId={projectId}
+        proposal={proposal}
+      />,
+    );
+
+    const createCard = screen
+      .getByRole("checkbox", { name: `Select ${actions[1].title}` })
+      .closest("article");
+    expect(createCard).not.toBeNull();
+    const card = within(createCard as HTMLElement);
+    for (const value of [
+      "task",
+      "Reconfirm catering",
+      "Call the venue before the supplier cutoff.",
+      "not started",
+      "high",
+      "6519012e-13a6-4e3e-9ae5-d09bd3054401",
+      "2026-08-01",
+      "2026-08-05",
+    ]) {
+      expect(card.getByText(value, { exact: true })).toBeVisible();
+    }
+
+    await user.click(
+      screen.getByRole("checkbox", { name: `Select ${actions[1].title}` }),
+    );
+    await user.click(screen.getByRole("button", { name: "Approve selected" }));
+
+    const dialog = within(
+      screen.getByRole("dialog", { name: /approve 2 selected actions/i }),
+    );
+    for (const value of [
+      "task",
+      "Reconfirm catering",
+      "Call the venue before the supplier cutoff.",
+      "not started",
+      "high",
+      "6519012e-13a6-4e3e-9ae5-d09bd3054401",
+      "2026-08-01",
+      "2026-08-05",
+    ]) {
+      expect(dialog.getByText(value, { exact: true })).toBeVisible();
+    }
   });
 
   it("supports keyboard selection, leaves actions pending locally, and summarizes before apply", async () => {

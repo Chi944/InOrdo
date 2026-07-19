@@ -64,6 +64,19 @@ export type ImpactReviewItem = {
   explanation: string;
 };
 
+export type CreateItemCommitField = {
+  field:
+    | "item_type"
+    | "title"
+    | "description"
+    | "status"
+    | "priority"
+    | "owner_id"
+    | "start_date"
+    | "due_date";
+  value: string | null;
+};
+
 export type RecoveryAction = {
   id: string;
   ordinal: number;
@@ -77,6 +90,7 @@ export type RecoveryAction = {
   title: string;
   currentValue: string;
   proposedValue: string;
+  commitFields?: CreateItemCommitField[];
   reason: string;
   linkedImpactItemId: string | null;
   linkedImpactLabel: string;
@@ -129,6 +143,7 @@ export type OperationAuditItem = {
   reason: string | null;
   beforeValue: string;
   afterValue: string;
+  commitFields?: CreateItemCommitField[];
   reversible: boolean;
   errorCode: string | null;
 };

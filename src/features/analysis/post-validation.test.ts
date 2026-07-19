@@ -128,6 +128,38 @@ function proposal(overrides: Partial<RecoveryProposal> = {}): RecoveryProposal {
   };
 }
 
+type UpdateItemFieldAction = Extract<
+  RecoveryProposal["actions"][number],
+  { type: "update_item_field" }
+>;
+
+function updateItemFieldAction(
+  overrides: Partial<UpdateItemFieldAction> = {},
+): UpdateItemFieldAction {
+  return {
+    type: "update_item_field",
+    targetItemId: changedItemId,
+    field: "start_date",
+    proposedValue: "2026-08-08",
+    reason: "Keep the dependent schedule internally consistent.",
+    linkedImpactItemId: changedItemId,
+    confidence: 0.9,
+    requiresHumanInput: false,
+    ...overrides,
+  };
+}
+
+function expectModelInvalid(callback: () => unknown) {
+  let failure: unknown;
+  try {
+    callback();
+  } catch (error) {
+    failure = error;
+  }
+  expect(failure).toBeInstanceOf(AnalysisError);
+  expect(failure).toMatchObject({ code: "model_invalid" });
+}
+
 describe("validateChangeExtraction", () => {
   it("accepts canonical evidence and keeps the database value as previous value", () => {
     const result = validateChangeExtraction(extraction(), sourceText, context);
@@ -300,6 +332,105 @@ describe("validateRecoveryProposal", () => {
     expect(() =>
       validateRecoveryProposal(
         proposal({ actions: [unsafeAction] }),
+        validatedChange,
+        impacts,
+        context,
+      ),
+    ).toThrow(AnalysisError);
+  });
+
+  it("rejects duplicate update actions for the same target and field", () => {
+    expectModelInvalid(() =>
+      validateRecoveryProposal(
+        proposal({
+          actions: [
+            updateItemFieldAction({
+              field: "priority",
+              proposedValue: "medium",
+            }),
+            updateItemFieldAction({
+              field: "priority",
+              proposedValue: "low",
+            }),
+          ],
+        }),
+        validatedChange,
+        impacts,
+        context,
+      ),
+    );
+  });
+
+  it("rejects a combined date range that is invalid even when each action is individually valid", () => {
+    expectModelInvalid(() =>
+      validateRecoveryProposal(
+        proposal({
+          actions: [
+            updateItemFieldAction({ proposedValue: "2026-08-08" }),
+            updateItemFieldAction({
+              field: "due_date",
+              proposedValue: "2026-08-03",
+            }),
+          ],
+        }),
+        validatedChange,
+        impacts,
+        context,
+      ),
+    );
+  });
+
+  it("allows null date candidates in the full proposal date set", () => {
+    const result = validateRecoveryProposal(
+      proposal({
+        actions: [
+          updateItemFieldAction({ proposedValue: null }),
+          updateItemFieldAction({
+            field: "due_date",
+            proposedValue: null,
+          }),
+        ],
+      }),
+      validatedChange,
+      impacts,
+      context,
+    );
+
+    expect(result.actions).toHaveLength(2);
+  });
+
+  it("isolates date candidates for different target items", () => {
+    const result = validateRecoveryProposal(
+      proposal({
+        actions: [
+          updateItemFieldAction({
+            targetItemId: impactedItemId,
+            proposedValue: "2026-09-11",
+            linkedImpactItemId: impactedItemId,
+          }),
+          updateItemFieldAction({ proposedValue: "2026-08-08" }),
+          updateItemFieldAction({
+            field: "due_date",
+            proposedValue: "2026-08-09",
+          }),
+        ],
+      }),
+      validatedChange,
+      impacts,
+      context,
+    );
+
+    expect(result.actions).toHaveLength(3);
+  });
+
+  it("retains the individual canonical-counterpart date check", () => {
+    expect(() =>
+      validateRecoveryProposal(
+        proposal({
+          actions: [
+            updateItemFieldAction({ proposedValue: "2026-08-11" }),
+          ],
+        }),
         validatedChange,
         impacts,
         context,

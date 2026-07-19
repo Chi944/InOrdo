@@ -247,6 +247,16 @@ Linked evidence on 2026-07-18: the migration ledger is aligned through `20260718
 - [x] Reset rechecks owner/admin access, configured slug, the demo marker, a deterministic baseline, idempotency, and rate limiting inside the reviewed database boundary.
 - [x] Reset restores 24 active canonical items and 26 edges, retires nonbaseline items without deleting history, records its operation in the closing generation, and advances the generation once.
 
+### Prompt 13 approval-integrity additions
+
+- [x] Application postvalidation rejects duplicate updates to one target field and a same-target start/due action set whose combined range is invalid, while allowing null endpoints and isolating different targets.
+- [x] The database action-set guard enforces the same invariant in either insertion order and serializes concurrent inserts on the proposal row; a local race committed exactly one duplicate candidate and rejected the other with `23514`.
+- [x] Existing active invalid proposals are conservatively superseded; applied/rejected history is not rewritten.
+- [x] Create-task/risk cards and final confirmation render item type, title, description, fixed initial status, priority, owner ID, start date, and due date from the immutable proposal payload.
+- [x] Successful create operation items replace caller JSON with a version-2 receipt built from the committed project row; the applied result and audit history render that canonical payload, while legacy receipts do not fabricate absent fields.
+- [x] A clean local migration replay, error-level schema lint, all seven rollback-wrapped SQL verifiers, focused Node 22 tests, and an exact create-apply receipt assertion passed. This is local evidence only; no linked/remote migration or authenticated browser claim is made here.
+- [ ] With an operator-created owner/admin account, review and apply one synthetic create action in the deployed UI; confirm all disclosed values match the created row and version-2 audit receipt exactly.
+
 ### Pending authenticated HTTP/browser procedure
 
 The linked SQL/RPC procedure above is complete. The following end-to-end procedure still requires an operator-created owner/admin Auth account and the configured synthetic project. Keep all credentials in untracked environment configuration; do not paste or print them.
