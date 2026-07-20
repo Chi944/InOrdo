@@ -309,7 +309,8 @@ If either provider path is suspect, execute this forward-containment sequence in
 4. Set `ANALYSIS_MODE=disabled`, create a new deployment, and verify that its analysis status is disabled.
 5. Create, review, and apply a new forward containment migration that revokes execution on `public.begin_project_analysis_with_policy` and marks every still-`available` private recording grant `revoked` with truthful owner/operator attribution. Do not edit the applied policy migration or delete grant/request/evidence history.
 6. Prove exact migration parity, run the rollback-wrapped policy SQL verifier (or a reviewed containment-specific successor if wrapper denial changes its expected contract), check health, and verify viewer denial before reopening any route.
-7. Never assign or restore the production alias to an old deployment while any provider credential remains valid.
+7. Test the canonical Production URL and every accessible older immutable deployment URL after both provider credentials are revoked or disabled, removed from every Vercel scope, and the disabled-mode deployment is ready. Each URL must show disabled/no-provider-call behavior, and no older URL may retain a usable provider credential.
+8. Never assign or restore the production alias to an old deployment while any provider credential remains valid.
 
 Containment is not complete merely because the UI hides analysis. Keep the analyze route closed until the database execution grants, environment names, deployment identity, and viewer-denial result all match the intended disabled state.
 
