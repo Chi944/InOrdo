@@ -30,6 +30,20 @@ const gatewayPolicy: AnalysisProviderPolicy = {
   recordingReady: false,
   gatewayReady: true,
 };
+const disabledPolicy: AnalysisProviderPolicy = {
+  ...recordingPolicy,
+  mode: "disabled",
+  recordingReady: false,
+  gatewayReady: false,
+};
+const unreadyRecordingPolicy: AnalysisProviderPolicy = {
+  ...recordingPolicy,
+  recordingReady: false,
+};
+const unreadyGatewayPolicy: AnalysisProviderPolicy = {
+  ...gatewayPolicy,
+  gatewayReady: false,
+};
 
 function executor(result: {
   data: unknown;
@@ -152,6 +166,78 @@ describe("Supabase analysis persistence", () => {
   });
 
   it.each([
+    {
+      name: "a Gateway claim for recording policy",
+      policy: recordingPolicy,
+      providerRoute: "gateway_fallback",
+      modelName: "openai/gpt-oss-20b",
+    },
+    {
+      name: "a recording claim for auto policy",
+      policy: gatewayPolicy,
+      providerRoute: "openai_recording",
+      modelName: "gpt-5.6-luna",
+    },
+    {
+      name: "a recording claim while analysis is disabled",
+      policy: disabledPolicy,
+      providerRoute: "openai_recording",
+      modelName: "gpt-5.6-luna",
+    },
+    {
+      name: "a recording claim while recording is unready",
+      policy: unreadyRecordingPolicy,
+      providerRoute: "openai_recording",
+      modelName: "gpt-5.6-luna",
+    },
+    {
+      name: "a Gateway claim while fallback is unready",
+      policy: unreadyGatewayPolicy,
+      providerRoute: "gateway_fallback",
+      modelName: "openai/gpt-oss-20b",
+    },
+  ] as const)("rejects $name as a safe persistence failure", async ({
+    policy,
+    providerRoute,
+    modelName,
+  }) => {
+    const rpc = executor({
+      data: {
+        status: "claimed",
+        analysis_request_id: requestId,
+        source_document_id: sourceDocumentId,
+        state: "processing",
+        change_event_id: null,
+        impact_run_id: null,
+        proposal_id: null,
+        retry_after_seconds: null,
+        provider_route: providerRoute,
+        model_name: modelName,
+      },
+      error: null,
+    });
+
+    await expect(
+      createSupabaseAnalysisPersistence(rpc).begin({
+        actorId: ownerId,
+        projectId,
+        projectRevision: "a".repeat(64),
+        providerPolicy: policy,
+        source: {
+          title: "Update",
+          type: "manual_note",
+          author: "Team",
+          timestamp: null,
+          text: "Changed date",
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: "persistence",
+      message: "The analysis could not be saved. Try again safely.",
+    });
+  });
+
+  it.each([
     "analysis_disabled",
     "recording_unavailable",
     "fallback_unavailable",
@@ -218,7 +304,7 @@ describe("Supabase analysis persistence", () => {
         actorId: ownerId,
         projectId,
         projectRevision: "a".repeat(64),
-        providerPolicy: recordingPolicy,
+        providerPolicy: gatewayPolicy,
         source: {
           title: "Update",
           type: "pasted_update",

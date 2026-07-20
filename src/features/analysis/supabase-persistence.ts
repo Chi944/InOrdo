@@ -421,6 +421,16 @@ export function createSupabaseAnalysisPersistence(
         if (parsed.data.provider_route === null || parsed.data.model_name === null) {
           throw persistenceError();
         }
+        const claimMatchesPolicy =
+          (policy.mode === "recording" &&
+            policy.recordingReady &&
+            parsed.data.provider_route === "openai_recording" &&
+            parsed.data.model_name === policy.recordingModelName) ||
+          (policy.mode === "auto" &&
+            policy.gatewayReady &&
+            parsed.data.provider_route === "gateway_fallback" &&
+            parsed.data.model_name === policy.gatewayModelName);
+        if (!claimMatchesPolicy) throw persistenceError();
         return {
           kind: "claimed",
           requestId: parsed.data.analysis_request_id,
