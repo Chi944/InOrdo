@@ -325,6 +325,35 @@ describe("project analysis service", () => {
     expect(deps.persistence.fail).not.toHaveBeenCalled();
   });
 
+  it("returns a normalized legacy duplicate without resolving an adapter", async () => {
+    const deps = dependencies();
+    deps.persistence.begin.mockResolvedValueOnce({
+      kind: "duplicate",
+      state: "failed",
+      requestId,
+      sourceDocumentId,
+      changeEventId: null,
+      impactRunId: null,
+      proposalId: null,
+      retryAfterSeconds: null,
+    });
+    const service = createProjectAnalysisService({
+      client: {} as ServerSupabaseClient,
+      ...deps,
+    });
+
+    await expect(service.analyze(projectId, request)).resolves.toMatchObject({
+      kind: "duplicate",
+      state: "failed",
+      requestId,
+    });
+    expect(deps.resolveModel).not.toHaveBeenCalled();
+    expect(deps.model.extractChange).not.toHaveBeenCalled();
+    expect(deps.model.draftProposal).not.toHaveBeenCalled();
+    expect(deps.persistence.complete).not.toHaveBeenCalled();
+    expect(deps.persistence.fail).not.toHaveBeenCalled();
+  });
+
   it.each([
     [
       "analysis_disabled" as const,

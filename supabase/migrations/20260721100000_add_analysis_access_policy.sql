@@ -442,6 +442,11 @@ begin
       when 'openai/gpt-oss-20b' then 'gateway_fallback'
       else null
     end;
+    selected_model_name := case existing_request.model_name
+      when 'gpt-5.6-luna' then existing_request.model_name
+      when 'openai/gpt-oss-20b' then existing_request.model_name
+      else null
+    end;
     return pg_catalog.jsonb_build_object(
       'status', 'duplicate',
       'analysis_request_id', existing_request.id,
@@ -452,7 +457,7 @@ begin
       'proposal_id', existing_request.proposal_id,
       'retry_after_seconds', null,
       'provider_route', selected_provider_route,
-      'model_name', existing_request.model_name
+      'model_name', selected_model_name
     );
   end if;
 
@@ -780,7 +785,11 @@ begin
   end;
   begin_result := begin_result || pg_catalog.jsonb_build_object(
     'provider_route', request_provider_route,
-    'model_name', request_model_name
+    'model_name', case request_provider_route
+      when 'openai_recording' then request_model_name
+      when 'gateway_fallback' then request_model_name
+      else null
+    end
   );
 
   configuration_ready := (

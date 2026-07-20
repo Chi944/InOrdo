@@ -95,6 +95,13 @@ describe("production route runtime configuration", () => {
     );
     expect(runbook).not.toContain("migration list --linked --output json");
     expect(runbook).not.toContain('EXPAND_MIGRATION_TAIL="20260719140000"');
+    expect(runbook).not.toContain("## Native-mutation contract phase");
+    expect(runbook).toContain(
+      "## Archived native-mutation contract verification",
+    );
+    expect(runbook).toContain(
+      "Do not create or apply another native-DML contract migration",
+    );
     expect(runbook).toContain('POLICY_MIGRATION_TAIL="20260721100000"');
     expect(runbook).toContain(
       'EXPECTED_REMOTE_TAIL="20260720190000"',

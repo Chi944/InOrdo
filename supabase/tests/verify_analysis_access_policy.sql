@@ -64,6 +64,13 @@ begin
     true
   );
   perform pg_catalog.set_config(
+    'inordo.analysis_policy_legacy_duplicate_hash',
+    private.source_normalized_sha256(
+      'Legacy provider duplicate verification.'
+    ),
+    true
+  );
+  perform pg_catalog.set_config(
     'inordo.analysis_policy_rate_hash',
     private.source_normalized_sha256(
       'Rate-limited recording grant verification.'
@@ -331,6 +338,125 @@ begin
 end;
 $$;
 reset role;
+
+-- A valid pre-policy duplicate with a historical model keeps its immutable
+-- request metadata, but the new RPC normalizes provider metadata and still
+-- records a distinct ready-mode capture without consuming a recording grant.
+do $$
+declare
+  grant_result jsonb;
+  source_id uuid;
+  request_id uuid;
+begin
+  insert into public.source_documents (
+    workspace_id, project_id, title, source_kind, raw_text, captured_by,
+    source_author, normalized_content_sha256
+  ) values (
+    '10000000-0000-4000-8000-000000000001'::uuid,
+    '20000000-0000-4000-8000-000000000001'::uuid,
+    'Legacy provider duplicate', 'manual_note',
+    'Legacy provider duplicate verification.',
+    '00000000-0000-4000-8000-000000000105'::uuid,
+    'Historical importer',
+    pg_catalog.current_setting(
+      'inordo.analysis_policy_legacy_duplicate_hash'
+    )
+  ) returning id into source_id;
+
+  insert into public.analysis_requests (
+    workspace_id, project_id, source_document_id, project_revision,
+    normalized_content_sha256, model_name, requested_by, state,
+    failure_stage, failure_code, finished_at
+  ) values (
+    '10000000-0000-4000-8000-000000000001'::uuid,
+    '20000000-0000-4000-8000-000000000001'::uuid,
+    source_id,
+    pg_catalog.current_setting('inordo.analysis_policy_revision'),
+    pg_catalog.current_setting(
+      'inordo.analysis_policy_legacy_duplicate_hash'
+    ),
+    'gpt-4.1-legacy',
+    '00000000-0000-4000-8000-000000000105'::uuid,
+    'failed'::public.analysis_request_state,
+    'extraction',
+    'model_unavailable',
+    pg_catalog.statement_timestamp()
+  ) returning id into request_id;
+
+  grant_result := private.issue_analysis_recording_grant(
+    '00000000-0000-4000-8000-000000000105'::uuid,
+    '20000000-0000-4000-8000-000000000001'::uuid,
+    pg_catalog.current_setting(
+      'inordo.analysis_policy_legacy_duplicate_hash'
+    ),
+    pg_catalog.statement_timestamp() + interval '10 minutes',
+    '00000000-0000-4000-8000-000000000101'::uuid
+  );
+  perform pg_catalog.set_config(
+    'inordo.legacy_duplicate_request_id', request_id::text, true
+  );
+  perform pg_catalog.set_config(
+    'inordo.legacy_duplicate_grant_id', grant_result ->> 'grant_id', true
+  );
+end;
+$$;
+set local role service_role;
+select pg_catalog.set_config(
+  'request.jwt.claims', '{"role":"service_role"}', true
+);
+do $$
+declare
+  provenance_count bigint;
+  request_count bigint;
+  source_count bigint;
+  result jsonb;
+begin
+  select count(*) into provenance_count from public.analysis_request_sources;
+  select count(*) into request_count from public.analysis_requests;
+  select count(*) into source_count from public.source_documents;
+
+  result := public.begin_project_analysis_with_policy(
+    '00000000-0000-4000-8000-000000000105'::uuid,
+    '20000000-0000-4000-8000-000000000001'::uuid,
+    pg_catalog.current_setting('inordo.analysis_policy_revision'),
+    'Legacy provider duplicate retry', 'manual_note', 'Current author',
+    'Legacy provider duplicate verification.',
+    pg_catalog.current_setting(
+      'inordo.analysis_policy_legacy_duplicate_hash'
+    ),
+    null, null, 'recording', true, false,
+    'gpt-5.6-luna', 'openai/gpt-oss-20b'
+  );
+
+  if result ->> 'status' <> 'duplicate'
+     or result ->> 'analysis_request_id' <>
+       pg_catalog.current_setting('inordo.legacy_duplicate_request_id')
+     or result ->> 'provider_route' is not null
+     or result ->> 'model_name' is not null
+     or (select count(*) from public.analysis_requests) <> request_count
+     or (select count(*) from public.source_documents) <> source_count + 1
+     or (select count(*) from public.analysis_request_sources)
+       <> provenance_count + 1 then
+    raise exception 'legacy_duplicate_normalization_and_provenance: %', result;
+  end if;
+end;
+$$;
+reset role;
+do $$
+begin
+  if not exists (
+    select 1
+    from private.analysis_recording_grants as grant_row
+    where grant_row.id = pg_catalog.current_setting(
+      'inordo.legacy_duplicate_grant_id'
+    )::uuid
+      and grant_row.status = 'available'
+      and grant_row.claimed_analysis_request_id is null
+  ) then
+    raise exception 'legacy_duplicate_does_not_consume_grant';
+  end if;
+end;
+$$;
 
 -- recording_replay_rejected
 set local role service_role;

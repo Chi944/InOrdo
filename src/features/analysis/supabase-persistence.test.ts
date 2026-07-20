@@ -649,6 +649,49 @@ describe("Supabase analysis persistence", () => {
     }
   });
 
+  it("accepts normalized metadata for a legacy-model duplicate", async () => {
+    const rpc = executor({
+      data: {
+        status: "duplicate",
+        analysis_request_id: requestId,
+        source_document_id: sourceDocumentId,
+        state: "failed",
+        change_event_id: null,
+        impact_run_id: null,
+        proposal_id: null,
+        retry_after_seconds: null,
+        provider_route: null,
+        model_name: null,
+      },
+      error: null,
+    });
+
+    await expect(
+      createSupabaseAnalysisPersistence(rpc).begin({
+        actorId: ownerId,
+        projectId,
+        projectRevision: "a".repeat(64),
+        providerPolicy: recordingPolicy,
+        source: {
+          title: "Legacy provider duplicate retry",
+          type: "manual_note",
+          author: "Team",
+          timestamp: null,
+          text: "Legacy provider duplicate verification.",
+        },
+      }),
+    ).resolves.toEqual({
+      kind: "duplicate",
+      state: "failed",
+      requestId,
+      sourceDocumentId,
+      changeEventId: null,
+      impactRunId: null,
+      proposalId: null,
+      retryAfterSeconds: null,
+    });
+  });
+
   it("stores a fallback quota exhaustion only as model unavailable", async () => {
     const rpc = executor({ data: null, error: null });
 
