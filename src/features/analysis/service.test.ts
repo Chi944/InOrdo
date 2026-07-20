@@ -230,7 +230,10 @@ describe("project analysis service", () => {
     expect(deps.resolveModel.mock.invocationCallOrder[0]).toBeLessThan(
       deps.model.extractChange.mock.invocationCallOrder[0]!,
     );
-    expect(deps.resolveModel).toHaveBeenCalledWith("openai_recording");
+    expect(deps.resolveModel).toHaveBeenCalledWith({
+      providerRoute: "openai_recording",
+      modelName: "gpt-5.6-luna",
+    });
     expect(deps.model.extractChange.mock.invocationCallOrder[0]).toBeLessThan(
       deps.model.draftProposal.mock.invocationCallOrder[0]!,
     );
@@ -452,7 +455,10 @@ describe("project analysis service", () => {
       code: "model_unavailable",
     });
     expect(deps.persistence.begin).toHaveBeenCalledOnce();
-    expect(deps.resolveModel).toHaveBeenCalledWith("openai_recording");
+    expect(deps.resolveModel).toHaveBeenCalledWith({
+      providerRoute: "openai_recording",
+      modelName: "gpt-5.6-luna",
+    });
     expect(deps.persistence.begin.mock.invocationCallOrder[0]).toBeLessThan(
       deps.resolveModel.mock.invocationCallOrder[0]!,
     );
@@ -486,13 +492,18 @@ describe("project analysis service", () => {
       ...deps,
     });
 
-    await service.analyze(projectId, request);
+    await expect(service.analyze(projectId, request)).resolves.toMatchObject({
+      model: "openai/gpt-oss-20b",
+    });
 
     expect(deps.persistence.begin).toHaveBeenCalledWith(
       expect.objectContaining({ providerPolicy: gatewayPolicy }),
     );
     expect(deps.resolveModel).toHaveBeenCalledOnce();
-    expect(deps.resolveModel).toHaveBeenCalledWith("gateway_fallback");
+    expect(deps.resolveModel).toHaveBeenCalledWith({
+      providerRoute: "gateway_fallback",
+      modelName: "openai/gpt-oss-20b",
+    });
     expect(deps.model.extractChange).toHaveBeenCalledOnce();
     expect(deps.model.draftProposal).toHaveBeenCalledOnce();
     expect(deps.persistence.complete).toHaveBeenCalledWith(

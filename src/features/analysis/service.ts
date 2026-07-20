@@ -73,6 +73,11 @@ export type BeginAnalysisResult =
       retryAfterSeconds: null;
     });
 
+export type AnalysisModelClaim = Pick<
+  Extract<BeginAnalysisResult, { kind: "claimed" }>,
+  "providerRoute" | "modelName"
+>;
+
 export type CompleteAnalysisInput = {
   actorId: string;
   requestId: string;
@@ -130,7 +135,7 @@ export type ProjectAnalysisServiceResult =
 type CreateProjectAnalysisServiceOptions = {
   client: ServerSupabaseClient;
   persistence: AnalysisPersistence;
-  resolveModel: (route: AnalysisProviderRoute) => AnalysisModelAdapter;
+  resolveModel: (claim: AnalysisModelClaim) => AnalysisModelAdapter;
   resolveProviderPolicy: () => AnalysisProviderPolicy;
   authorize?: AnalysisAuthorizer;
   loadContext?: (
@@ -285,7 +290,10 @@ export function createProjectAnalysisService({
       try {
         let model: AnalysisModelAdapter;
         try {
-          model = resolveModel(beginning.providerRoute);
+          model = resolveModel({
+            providerRoute: beginning.providerRoute,
+            modelName: beginning.modelName,
+          });
         } catch (error) {
           if (error instanceof AnalysisError) throw error;
           throw new AnalysisError("model_unavailable", undefined, error);
@@ -372,7 +380,7 @@ export function createProjectAnalysisService({
           kind: "completed",
           requestId: beginning.requestId,
           sourceDocumentId: beginning.sourceDocumentId,
-          model: proposalDraft.metadata.model,
+          model: beginning.modelName,
           extraction: extraction.metadata,
           proposal: proposalDraft.metadata,
           ...completed,

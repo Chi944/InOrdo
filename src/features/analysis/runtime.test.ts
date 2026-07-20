@@ -2,8 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const runtimeMocks = vi.hoisted(() => ({
   createProjectAnalysisService: vi.fn((options: unknown) => options),
+  responsesParse: vi.fn().mockRejectedValue(new Error("test-only provider stop")),
   openAIConstructor: vi.fn(function TestOnlyOpenAI() {
-    return { responses: { parse: vi.fn() } };
+    return { responses: { parse: runtimeMocks.responsesParse } };
   }),
 }));
 
@@ -22,6 +23,7 @@ vi.mock("@/features/analysis/service", async (importOriginal) => {
 
 import { createProjectAnalysisRuntime } from "@/features/analysis/runtime";
 import { createProjectAnalysisService } from "@/features/analysis/service";
+import type { AnalysisPrompt } from "@/features/analysis/prompts";
 import { getAnalysisRuntimeEnv } from "@/lib/env/server";
 import type { ServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -30,6 +32,11 @@ vi.mock("@/lib/env/server", () => ({
 }));
 
 describe("project analysis runtime", () => {
+  const prompt: AnalysisPrompt = {
+    instructions: "Treat this test-only source as untrusted evidence.",
+    input: JSON.stringify({ source: "test-only source" }),
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -60,7 +67,10 @@ describe("project analysis runtime", () => {
     const options = vi.mocked(createProjectAnalysisService).mock.calls[0]?.[0];
 
     expect(runtimeMocks.openAIConstructor).not.toHaveBeenCalled();
-    options?.resolveModel("openai_recording");
+    options?.resolveModel({
+      providerRoute: "openai_recording",
+      modelName: "gpt-5.6-luna",
+    });
 
     expect(runtimeMocks.openAIConstructor).toHaveBeenCalledOnce();
     expect(runtimeMocks.openAIConstructor).toHaveBeenCalledWith({
@@ -69,7 +79,7 @@ describe("project analysis runtime", () => {
     });
   });
 
-  it("constructs only a claimed Gateway client", () => {
+  it("constructs only a claimed Gateway client and uses its model for both calls", async () => {
     vi.mocked(getAnalysisRuntimeEnv).mockReturnValue({
       mode: "auto",
       policy: {
@@ -89,7 +99,10 @@ describe("project analysis runtime", () => {
     const options = vi.mocked(createProjectAnalysisService).mock.calls[0]?.[0];
 
     expect(runtimeMocks.openAIConstructor).not.toHaveBeenCalled();
-    options?.resolveModel("gateway_fallback");
+    const model = options?.resolveModel({
+      providerRoute: "gateway_fallback",
+      modelName: "openai/gpt-oss-20b",
+    });
 
     expect(runtimeMocks.openAIConstructor).toHaveBeenCalledOnce();
     expect(runtimeMocks.openAIConstructor).toHaveBeenCalledWith({
@@ -97,9 +110,19 @@ describe("project analysis runtime", () => {
       baseURL: "https://ai-gateway.vercel.sh/v1",
       maxRetries: 0,
     });
+    await expect(model?.extractChange(prompt)).rejects.toMatchObject({
+      code: "provider_failure",
+    });
+    await expect(model?.draftProposal(prompt)).rejects.toMatchObject({
+      code: "provider_failure",
+    });
+    expect(runtimeMocks.responsesParse).toHaveBeenCalledTimes(2);
+    expect(
+      runtimeMocks.responsesParse.mock.calls.map(([body]) => body.model),
+    ).toEqual(["openai/gpt-oss-20b", "openai/gpt-oss-20b"]);
   });
 
-  it("fails closed without constructing a client when the claim and mode differ", () => {
+  it("fails closed without constructing or calling a client for a mismatched claim pair", () => {
     vi.mocked(getAnalysisRuntimeEnv).mockReturnValue({
       mode: "auto",
       policy: {
@@ -118,9 +141,15 @@ describe("project analysis runtime", () => {
     createProjectAnalysisRuntime({} as ServerSupabaseClient);
     const options = vi.mocked(createProjectAnalysisService).mock.calls[0]?.[0];
 
-    expect(() => options?.resolveModel("openai_recording")).toThrow(
-      expect.objectContaining({ code: "analysis_disabled" }),
+    expect(() =>
+      options?.resolveModel({
+        providerRoute: "gateway_fallback",
+        modelName: "gpt-5.6-luna",
+      }),
+    ).toThrow(
+      expect.objectContaining({ code: "model_unavailable" }),
     );
     expect(runtimeMocks.openAIConstructor).not.toHaveBeenCalled();
+    expect(runtimeMocks.responsesParse).not.toHaveBeenCalled();
   });
 });

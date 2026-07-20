@@ -34,32 +34,34 @@ export function createProjectAnalysisRuntime(client: ServerSupabaseClient) {
     client,
     persistence,
     resolveProviderPolicy: () => getAnalysisRuntimeEnv().policy,
-    resolveModel: (route) => {
+    resolveModel: (claim) => {
       const environment = getAnalysisRuntimeEnv();
       if (
-        route === "openai_recording" &&
+        claim.providerRoute === "openai_recording" &&
+        claim.modelName === "gpt-5.6-luna" &&
         environment.mode === "recording" &&
-        environment.credential
+        environment.credential?.model === claim.modelName
       ) {
         const openai = new OpenAI({
           apiKey: environment.credential.apiKey,
           maxRetries: 0,
         });
         return createOpenAIAnalysisAdapter(openai.responses, {
-          model: environment.credential.model,
+          model: claim.modelName,
         });
       }
       if (
-        route === "gateway_fallback" &&
+        claim.providerRoute === "gateway_fallback" &&
+        claim.modelName === "openai/gpt-oss-20b" &&
         environment.mode === "auto" &&
-        environment.credential
+        environment.credential?.model === claim.modelName
       ) {
         return createGatewayAnalysisAdapter(
           environment.credential.apiKey,
-          environment.credential.model,
+          claim.modelName,
         );
       }
-      throw new AnalysisError("analysis_disabled");
+      throw new AnalysisError("model_unavailable");
     },
   });
 }
