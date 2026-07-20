@@ -24,18 +24,22 @@ const safeMessages: Record<AnalysisErrorCode, string> = {
   duplicate: "This project update has already been analyzed at this project version.",
   rate_limited: "Too many new analyses were requested. Try again shortly.",
   project_changed: "The project changed during analysis. Review it and try again.",
-  model_timeout: "The analysis timed out before completion. Try again safely.",
-  model_unavailable: "The analysis service is temporarily unavailable.",
+  model_timeout:
+    "The analysis timed out after the source was preserved. Immutable evidence and a failed analysis status may remain, but no project item or proposal changed.",
+  model_unavailable:
+    "The analysis provider became unavailable after the source was preserved. Immutable evidence and a failed analysis status may remain, but no project item or proposal changed.",
   analysis_disabled:
-    "Live AI analysis is disabled. Preserved results remain available for review.",
+    "Live AI analysis is disabled in this public demo to protect the operator's API budget. No OpenAI request was made and no project data changed. You can inspect the verified synthetic result and non-model project controls. To run a new analysis, deploy InOrdo with your own OpenAI API project and key.",
   recording_unavailable:
-    "The approved recording window is unavailable. No model request was made.",
+    "The approved GPT-5.6 recording window is unavailable. No model request was made and no project data changed.",
   fallback_unavailable:
-    "The capped analysis fallback is unavailable. No model request was made.",
+    "Free fallback analysis is not configured for this deployment. No paid OpenAI request was made and no project data changed. You can inspect the verified synthetic result or deploy InOrdo with your own provider credentials.",
   fallback_quota_exhausted:
-    "The capped analysis fallback has reached its usage limit.",
-  model_refusal: "The update could not be analyzed safely.",
-  model_invalid: "The analysis result could not be validated safely.",
+    "Free fallback analysis is unavailable because its capped allowance has been exhausted. No paid OpenAI request was made, and no project item or proposal changed. The submitted source remains immutable evidence with a failed analysis status.",
+  model_refusal:
+    "The provider could not analyze the update safely after the source was preserved. Immutable evidence and a failed analysis status may remain, but no project item or proposal changed.",
+  model_invalid:
+    "The analysis output could not be validated after the source was preserved. Immutable evidence and a failed analysis status may remain, but no project item or proposal changed.",
   persistence: "The analysis could not be saved. Try again safely.",
 };
 

@@ -12,6 +12,7 @@ import {
   createProjectAnalysisService,
 } from "@/features/analysis/service";
 import type { AuthorizedProjectScope } from "@/lib/auth/guards";
+import { AuthorizationError } from "@/lib/auth/errors";
 import type { ServerSupabaseClient } from "@/lib/supabase/server";
 
 const workspaceId = "166645ec-1ab3-48dc-98c7-3b6f99b70301";
@@ -325,20 +326,56 @@ describe("project analysis service", () => {
   });
 
   it.each([
-    "rate_limited",
-    "analysis_disabled",
-    "recording_unavailable",
-    "fallback_unavailable",
-  ] as const)("does not resolve a provider when begin returns %s", async (code) => {
+    [
+      "analysis_disabled" as const,
+      {
+        ...recordingPolicy,
+        mode: "disabled" as const,
+        recordingReady: false,
+      },
+    ],
+    ["recording_unavailable" as const, recordingPolicy],
+    [
+      "fallback_unavailable" as const,
+      {
+        ...recordingPolicy,
+        mode: "auto" as const,
+        recordingReady: false,
+        gatewayReady: false,
+      },
+    ],
+  ])("begins under policy but does not resolve a provider for %s", async (code, policy) => {
     const deps = dependencies();
+    deps.resolveProviderPolicy.mockReturnValueOnce(policy);
     deps.persistence.begin.mockRejectedValueOnce(new AnalysisError(code));
     const service = createProjectAnalysisService({
       client: {} as ServerSupabaseClient,
       ...deps,
     });
 
+    await expect(service.analyze(projectId, request)).rejects.toEqual(
+      new AnalysisError(code),
+    );
+    expect(deps.resolveProviderPolicy).toHaveBeenCalledOnce();
+    expect(deps.persistence.begin).toHaveBeenCalledWith(
+      expect.objectContaining({ providerPolicy: policy }),
+    );
+    expect(deps.resolveModel).not.toHaveBeenCalled();
+    expect(deps.model.extractChange).not.toHaveBeenCalled();
+    expect(deps.model.draftProposal).not.toHaveBeenCalled();
+    expect(deps.persistence.fail).not.toHaveBeenCalled();
+  });
+
+  it("does not resolve a provider after database rate limiting", async () => {
+    const deps = dependencies();
+    deps.persistence.begin.mockRejectedValueOnce(new AnalysisError("rate_limited"));
+    const service = createProjectAnalysisService({
+      client: {} as ServerSupabaseClient,
+      ...deps,
+    });
+
     await expect(service.analyze(projectId, request)).rejects.toMatchObject({
-      code,
+      code: "rate_limited",
     });
     expect(deps.resolveModel).not.toHaveBeenCalled();
     expect(deps.model.extractChange).not.toHaveBeenCalled();
@@ -437,8 +474,93 @@ describe("project analysis service", () => {
       "authorization stopped",
     );
     expect(deps.persistence.begin).not.toHaveBeenCalled();
+    expect(deps.resolveProviderPolicy).not.toHaveBeenCalled();
     expect(deps.model.extractChange).not.toHaveBeenCalled();
     expect(deps.resolveModel).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["viewer", new AuthorizationError("forbidden")],
+    ["nonmember", new AuthorizationError("not_found")],
+  ])("denies a %s before policy, evidence, or provider construction", async (_kind, denial) => {
+    const deps = dependencies();
+    deps.authorize.mockRejectedValueOnce(denial);
+    const service = createProjectAnalysisService({
+      client: {} as ServerSupabaseClient,
+      ...deps,
+    });
+
+    await expect(service.analyze(projectId, request)).rejects.toBe(denial);
+    expect(deps.loadContext).not.toHaveBeenCalled();
+    expect(deps.resolveProviderPolicy).not.toHaveBeenCalled();
+    expect(deps.persistence.begin).not.toHaveBeenCalled();
+    expect(deps.resolveModel).not.toHaveBeenCalled();
+    expect(deps.model.extractChange).not.toHaveBeenCalled();
+    expect(deps.model.draftProposal).not.toHaveBeenCalled();
+  });
+
+  it("constructs one adapter and makes one model-call pair across a same-source race", async () => {
+    const deps = dependencies();
+    deps.persistence.begin
+      .mockResolvedValueOnce({
+        kind: "claimed",
+        requestId,
+        sourceDocumentId,
+        providerRoute: "openai_recording",
+        modelName: "gpt-5.6-luna",
+      })
+      .mockResolvedValueOnce({
+        kind: "duplicate",
+        state: "processing",
+        requestId,
+        sourceDocumentId,
+        changeEventId: null,
+        impactRunId: null,
+        proposalId: null,
+        retryAfterSeconds: 120,
+      });
+    const service = createProjectAnalysisService({
+      client: {} as ServerSupabaseClient,
+      ...deps,
+    });
+
+    const [claimed, duplicate] = await Promise.all([
+      service.analyze(projectId, request),
+      service.analyze(projectId, request),
+    ]);
+
+    expect(claimed).toMatchObject({ kind: "completed", requestId });
+    expect(duplicate).toMatchObject({ kind: "duplicate", requestId });
+    expect(deps.persistence.begin).toHaveBeenCalledTimes(2);
+    expect(deps.resolveModel).toHaveBeenCalledOnce();
+    expect(deps.model.extractChange).toHaveBeenCalledOnce();
+    expect(deps.model.draftProposal).toHaveBeenCalledOnce();
+    expect(deps.persistence.complete).toHaveBeenCalledOnce();
+  });
+
+  it("never attempts Gateway fallback after a claimed recording failure", async () => {
+    const deps = dependencies();
+    deps.model.extractChange.mockRejectedValueOnce(
+      new AnalysisModelError("provider_failure", "test-only upstream detail"),
+    );
+    const service = createProjectAnalysisService({
+      client: {} as ServerSupabaseClient,
+      ...deps,
+    });
+
+    await expect(service.analyze(projectId, request)).rejects.toMatchObject({
+      code: "model_unavailable",
+    });
+    expect(deps.resolveModel).toHaveBeenCalledOnce();
+    expect(deps.resolveModel).toHaveBeenCalledWith({
+      providerRoute: "openai_recording",
+      modelName: "gpt-5.6-luna",
+    });
+    expect(deps.persistence.fail).toHaveBeenCalledWith(
+      expect.objectContaining({ failureCode: "model_unavailable" }),
+    );
+    expect(deps.persistence.complete).not.toHaveBeenCalled();
+    expect(deps.model.draftProposal).not.toHaveBeenCalled();
   });
 
   it("claims before resolving the selected model and fails the claim if resolution fails", async () => {
