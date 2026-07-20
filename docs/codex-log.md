@@ -308,3 +308,10 @@ Replace this placeholder only after running `/feedback` in the primary Codex tas
 - Preserved the product truth boundary: GPT-5.6 has bounded server-only extraction/drafting jobs, deterministic TypeScript owns dependency reach, synthetic data is used throughout, human approval remains required, and model output never directly mutates project records.
 - The documentation explicitly excludes test routes, generated interfaces, private Codex transcripts, terminal or environment output, browser/account details, committed raw media, and paid premium media generation.
 - No media file, browser state, credential, identifier, provider request, deployment, hosted database, Devpost entry, GitHub issue, or private transcript was accessed or changed by this work package. Capture, voice delivery, editing, key revocation, final export, upload, and publication remain release gates.
+
+## 2026-07-21 — Video failure-branch and pacing reconciliation
+
+- Added mutually exclusive post-classification/post-revocation verified-success and no-retry editorial branches. The no-retry path replaces only D1, retains every other approved line and the exact 2:47 timeline, and covers 0:54–2:28 with genuine Production fail-closed or preserved synthetic states explicitly labeled as not a new paid result.
+- Defined a complete no-retry thumbnail using the exact `Bounded AI contract + deterministic dependency graph` badge and a genuine fail-closed/preserved Production frame. It cannot reuse the success crop or imply that a failed, seeded, or preserved result was newly paid and recorded.
+- Added a blocking timed-pickup gate for Deston's unchanged 29-word D4: it must remain intelligible within 10 seconds without rushing, or recording pauses for specification-owner resolution rather than silently changing approved text or timing.
+- No media, environment file, browser state, credential, identifier, provider request, deployment, hosted mutation, or publication was accessed or performed during this documentation correction.
