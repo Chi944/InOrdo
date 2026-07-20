@@ -236,6 +236,15 @@ The implementation entries above correspond to these Git commits. Merge commits 
 - Added hidden server-rendered generation inputs and logical-request idempotency keys to the existing item/dependency forms without changing their visual design. Known validation, authorization, and conflict responses rotate the key; an ambiguous failure retains it for safe unchanged replay, while editing the form rotates it immediately.
 - Added rollback-wrapped SQL and focused TypeScript/UI regressions. A clean Node 22.23.1/npm 10.9.8 install, lint, typecheck, 385 Vitest tests across 57 files, production build, one guarded Chromium journey, zero-vulnerability production audit, clean local migration replay, all nine SQL verifiers, schema lint, generated-type comparison, and a two-session reset-fence race passed. Independent backend, UI, and SQL reviews found no remaining P0/P1 issue after the mutable pre-RPC replay blocker was removed. This is local evidence only; no hosted migration, deployment, provider call, credentialed browser flow, or private transcript is claimed here.
 
+## 2026-07-19 — Prompt 10 reviewer documentation repair
+
+- A read-only journey and release review found two P1 documentation defects: the optional local Auth/UI instructions omitted the required demo-project slug, and the production procedure could deploy application code without first proving the linked database had the current migration tail.
+- The local handoff now authorizes only the two browser-safe Supabase values, the fixed non-secret `regional-climate-action-summit-2026` project slug, and the operator-provisioned account; service-role, reset, OpenAI, and deployment credentials remain withheld.
+- The production sequence now requires a linked migration inventory, dry-run, explicit typed human approval, reviewed push, and machine-checked exact parity through `20260719140000` before `vercel --prod` can run.
+- The bounded parity helper rejects malformed, oversized, mismatched, duplicate, out-of-order, or stale migration ledgers and passed against the actual local Supabase ledger without printing it. Node 22.23.1/npm 10.9.8 then completed a clean lockfile-stable install, lint, typecheck, 394 Vitest tests across 57 files, production build, the guarded Chromium journey, a zero-vulnerability production audit, and whitespace checks.
+- The review also recorded two P2 scale limits without overstating the P0: analysis completion briefly serializes cross-project writes with whole-table `SHARE` locks, and dependency management silently caps its list at 500 rows. The synthetic demo bounds mitigate current exposure; project-scoped coordination, pagination, and an explicit completeness signal remain backlog work.
+- This entry records documentation and local review only. No hosted migration, database mutation, deployment, credentialed browser journey, provider call, environment value, credential, or private transcript was accessed or changed.
+
 ## Primary `/feedback` evidence
 
 Primary Session ID: `<PRIMARY_FEEDBACK_SESSION_ID>`

@@ -263,7 +263,9 @@ Linked evidence on 2026-07-18: the migration ledger is aligned through `20260718
 - [x] `verify_superseded_action_reconciliation.sql` proves pending/approved staleness, attribution preservation, terminal-history preservation, and apply-safe deferred reconciliation.
 - [x] `verify_generation_guarded_mutations.sql` proves RPC authorization, direct-DML denial, strict record validation, exact replay, key conflicts, generation/version fences, and dependency integrity.
 - [x] A real two-session local race proved a generation-1 mutation waited behind the project lock, rejected with `40001` after generation advanced to 2, and created zero stale items and zero ledger receipts.
-- [x] Node 22.23.1/npm 10.9.8 clean install, lint, typecheck, 385 unit tests across 57 files, guarded Chromium journey, production build, zero-vulnerability production audit, generated-type comparison, and diff check passed on the settled branch.
+- [x] Node 22.23.1/npm 10.9.8 clean install, lint, typecheck, 394 unit tests across 57 files, guarded Chromium journey, production build, zero-vulnerability production audit, generated-type comparison, local migration-parity guard, and diff check passed on the settled branch.
+- [x] Prompt 10 review found and corrected two release-documentation defects: optional local Auth/UI now configures the required non-secret project slug without sharing credentials, and the production sequence now blocks Vercel deployment until a reviewed linked migration push is exactly aligned through `20260719140000`.
+- [x] Two P2 scale limits are disclosed with mitigations and backlog owners: analysis finalization's cross-project table-lock scope and the dependency-management UI's silent 500-row cap.
 - [ ] Hosted migration and authenticated browser verification remain pending until the reviewed branch is merged and the operator explicitly opens the release gate.
 
 ### Pending authenticated HTTP/browser procedure
@@ -452,6 +454,7 @@ This subsection preserves the Prompt 7 checkpoint. Prompt 12 supersedes its orig
 - [ ] Confirm `https://github.com/Chi944/InOrdo-Hackathon` opens signed out and exposes the final submitted `main` commit, README, screenshots, and MIT license.
 - [ ] Confirm the production URL opens in a private/incognito browser and identifies the exact deployed commit.
 - [ ] Confirm every required deployment variable is configured and passes the exact deployed artifact's strict readiness schema, with server-only values absent from the browser bundle, logs, screenshots, and repository.
+- [ ] Before `npx vercel --prod`, review the linked migration list and `db push --dry-run`, explicitly approve and apply only the expected migrations, then require `scripts/verify-migration-parity.mjs` to prove exact local/remote parity through `20260719140000`.
 - [x] [Vercel documents a 4.5 MB Function request-body limit](https://vercel.com/docs/functions/limitations); application handlers enforce the tighter 24,000/32,000-byte caps while streaming and cancel over-limit bodies without trusting `Content-Length`.
 - [ ] Run exactly one funded synthetic GPT-5.6 analysis and record safe metadata only; do not record a key, prompt, raw provider output, or source body.
 - [ ] Complete the authenticated production smoke path above as owner/admin and repeat read-only/denial checks as viewer and nonmember where feasible.

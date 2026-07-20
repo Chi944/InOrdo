@@ -26,6 +26,11 @@
 - [ ] Observability, retention policy, and hardened failure recovery.
 - [ ] Paginate project/dependency presentation beyond the bounded P0 fixture and split the large impact workflow client boundary.
 
+## P2 scaling follow-ups
+
+- [ ] Replace `complete_project_analysis` whole-table `SHARE` locks with measured project-scoped coordination that preserves revision consistency, atomic completion, and late-worker fencing. Until then, monitor lock waits and completion latency and keep the workflow to the low-volume synthetic demo.
+- [ ] Paginate the dependency-management repository beyond 500 rows and surface an explicit completeness/truncation state. Until then, keep supported demo projects below the cap and do not present that screen as a complete large-project inventory.
+
 ## Explicitly deferred
 
 External connectors, embeddings/vector search, autonomous mutation, enterprise administration, and native mobile applications.

@@ -128,7 +128,7 @@ Stop if either status command prints a path, a gate fails, either pair of full S
 
 ## Production sequence
 
-Production deployment starts over from a clean, current `main`. Do not reuse an old preview working tree or deploy a feature branch.
+Production deployment starts over from a clean, current `main`. Do not reuse an old preview working tree or deploy a feature branch. The database release is part of this sequence: the application must not deploy until the linked ledger matches the repository's exact migration tail.
 
 ```bash
 set -euo pipefail
@@ -158,12 +158,33 @@ git fetch --prune origin main
 test "$(git rev-parse --verify HEAD)" = "$RELEASE_SHA"
 test "$(git rev-parse --verify origin/main)" = "$RELEASE_SHA"
 test "$(git rev-list --left-right --count origin/main...HEAD | tr '\t' ' ')" = "0 0"
+EXPECTED_MIGRATION_TAIL="20260719140000"
+npx --no-install supabase migration list --linked
+npx --no-install supabase db push --dry-run
+printf '%s\n' \
+  "STOP: review the linked ledger and dry-run above." \
+  "Type apply-$EXPECTED_MIGRATION_TAIL only if every pending migration is reviewed."
+read -r MIGRATION_APPROVAL
+test "$MIGRATION_APPROVAL" = "apply-$EXPECTED_MIGRATION_TAIL"
+npx --no-install supabase db push
+LEDGER_JSON="$(
+  npx --no-install supabase --output-format json migration list --linked
+)"
+LEDGER_JSON="$LEDGER_JSON" \
+EXPECTED_MIGRATION_TAIL="$EXPECTED_MIGRATION_TAIL" \
+  node scripts/verify-migration-parity.mjs
+git status --short
+test -z "$(git status --porcelain=v1 --untracked-files=all)"
+git fetch --prune origin main
+test "$(git rev-parse --verify HEAD)" = "$RELEASE_SHA"
+test "$(git rev-parse --verify origin/main)" = "$RELEASE_SHA"
+test "$(git rev-list --left-right --count origin/main...HEAD | tr '\t' ' ')" = "0 0"
 npx vercel --prod
 npx vercel inspect <PRODUCTION_DEPLOYMENT_URL>
 npx vercel logs <PRODUCTION_DEPLOYMENT_URL>
 ```
 
-Both status checks must be empty, both pairs of full SHAs must be identical, and both divergence counts must be exactly `0 0`. The second fetch catches `origin/main` moving during the release gate; if it moved, restart from the new reviewed commit. Record that identical full SHA as the release SHA before `npx vercel --prod` and compare it with deployment metadata after the build. Review logs only for status and safe error codes/configuration names. Never paste a log containing a credential, request body, source evidence, human response, provider payload, authorization header, or cookie.
+Every status check must be empty, every full-SHA comparison must be identical, and every divergence count must be exactly `0 0`. The remote checks before and after the database gate catch `origin/main` moving during either phase; if it moved, stop and restart from the new reviewed commit instead of deploying the stale application. `migration list` and `db push --dry-run` are review evidence, not authorization to mutate the hosted schema. Stop on an unexpected remote-only migration, a gap, an unreviewed pending migration, or any dry-run error. The typed confirmation authorizes only the reviewed push through `20260719140000`; after the push, `scripts/verify-migration-parity.mjs` consumes the captured `LEDGER_JSON` and `EXPECTED_MIGRATION_TAIL` and must prove exact local/remote parity before Vercel is contacted. If the push or parity check fails, contain the release and use a new forward migration for correction; never edit or delete an applied migration. Record the identical full Git SHA as the release SHA before `npx vercel --prod` and compare it with deployment metadata after the build. Review logs only for status and safe error codes/configuration names. Never paste a log containing a credential, request body, source evidence, human response, provider payload, authorization header, or cookie.
 
 The project explicitly enables Fluid Compute in `vercel.json`. The analysis route sets a conservative 90-second function duration, below the currently supported 300-second Hobby Fluid maximum; 90 seconds is the application's release budget, not the plan maximum. Its two sequential OpenAI calls each have a 30-second internal limit with SDK/request retries disabled, leaving about 30 seconds for authorization, graph work, persistence, and safe failure handling. The database assigns a fixed three-minute claim lease, providing a second full route-runtime margin. Active duplicate responses expose the remaining bounded delay; resubmitting the exact update after expiry terminalizes the existing claim without another provider call. A late success is rejected transactionally. Other mutation/history routes use a 30-second duration. A deployment-time function limit is not permission to wait indefinitely or add background work. OpenAI must never be contacted during `npm run build` or the Vercel build phase.
 

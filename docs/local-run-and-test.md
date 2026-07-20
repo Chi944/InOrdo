@@ -11,7 +11,7 @@ This guide gives Deston on Windows and Andres on macOS repeatable, role-appropri
 - Until `OPENAI_API_KEY` is intentionally added, `/api/health` must return generic `503 not_ready`; this is expected and live analysis must remain unclaimed.
 - Use only the fictional Regional Climate Action Summit workspace and the operator-provisioned demo Auth account.
 
-Deston's privileged local fail-closed setup uses these six non-OpenAI names: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_MODEL`, `DEMO_PROJECT_SLUG`, and `DEMO_RESET_SECRET`. Leave `OPENAI_API_KEY` blank. Andres should prefer the deployed production application for authenticated interface QA. When local Auth/UI inspection is necessary, he needs only the two browser-safe `NEXT_PUBLIC_` values and his own operator-provisioned demo account; server-only fields remain blank.
+Deston's privileged local fail-closed setup uses these six non-OpenAI names: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_MODEL`, `DEMO_PROJECT_SLUG`, and `DEMO_RESET_SECRET`. Leave `OPENAI_API_KEY` blank. Andres should prefer the deployed production application for authenticated interface QA. When local Auth/UI inspection is necessary, he needs only the two browser-safe `NEXT_PUBLIC_` values, the non-secret server-only `DEMO_PROJECT_SLUG=regional-climate-action-summit-2026`, and his own operator-provisioned demo account. Every credential and privileged server value remains blank.
 
 A Vercel CLI-managed `VERCEL_OIDC_TOKEN`, if present, is also a secret: do not inspect, copy, document, or commit it. If Andres is later assigned a specific privileged local operation, the project owner must approve the narrow access and deliver each required server value through the approved secret manager; never grant the full secret set merely for environment parity.
 
@@ -72,7 +72,7 @@ git pull --ff-only origin main
 npm ci
 ```
 
-For routine interface work, Andres does not need to link Vercel or list Production variables. Prefer the deployed production URL for the final authenticated QA. For an optional local Auth/UI pass, create the ignored local file and populate only the two browser-safe Supabase names through an authorized project source:
+For routine interface work, Andres does not need to link Vercel or list Production variables. Prefer the deployed production URL for the final authenticated QA. For an optional local Auth/UI pass, create the ignored local file and populate the two browser-safe Supabase names through an authorized project source plus the fixed, non-secret demo-project slug:
 
 ```bash
 if [ ! -e .env.local ]; then
@@ -82,7 +82,7 @@ git check-ignore -q .env.local
 git status --short
 ```
 
-Populate `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` only. Leave `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, `OPENAI_MODEL`, `DEMO_PROJECT_SLUG`, and `DEMO_RESET_SECRET` blank. Do not send Andres Deston's `.env.local`, service-role/reset values, or OpenAI credential, and do not temporarily demote Production secrets into Preview or Development merely to make them pullable.
+Populate `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `DEMO_PROJECT_SLUG=regional-climate-action-summit-2026`. The slug identifies the checked-in synthetic project; it is server-only but not a credential. Leave `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, `OPENAI_MODEL`, and `DEMO_RESET_SECRET` blank. Do not send Andres Deston's `.env.local`, service-role/reset values, or OpenAI credential, and do not temporarily demote Production secrets into Preview or Development merely to make them pullable.
 
 ## Confirm the hosted Supabase link
 
@@ -94,7 +94,7 @@ npx --no-install supabase link --project-ref hctvqaxkxqmqodzeshjm
 npx --no-install supabase migration list --linked
 ```
 
-The local and remote migration columns must match through `20260719113000`. Do not run `supabase db reset` against the hosted project. Do not run `supabase db push` unless a reviewed migration is intentionally being released.
+The local and remote migration columns must match exactly through the current tracked tail, `20260719140000`. Do not accept an older remote tail, a remote-only version, or a gap. Do not run `supabase db reset` against the hosted project. Run `supabase db push` only through the reviewed, fail-closed production sequence in `docs/deployment-runbook.md` when those migrations are intentionally being released.
 
 ## Start the application
 
@@ -110,7 +110,7 @@ Open `http://localhost:3000`. Before OpenAI is configured, verify:
 - `/login` renders the email/password form;
 - signed-out `/app` redirects to `/login?next=%2Fapp`;
 - `/api/health` returns generic `503 not_ready`; and
-- the server log never exposes a value. Deston's six-name setup should identify only `OPENAI_API_KEY` as missing; Andres's public-only setup may identify the intentionally absent server-only names from the fixed allowlist.
+- the server log never exposes a value. Deston's six-name setup should identify only `OPENAI_API_KEY` as missing; Andres's least-privilege local setup may identify the intentionally absent privileged server names from the fixed allowlist.
 
 Stop the development server with `Ctrl+C`.
 

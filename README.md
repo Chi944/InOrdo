@@ -291,6 +291,8 @@ Do not expose server variables to client code, point a Preview at the production
 | The guarded Playwright journey uses conspicuously labeled synthetic data and intercepted provider/database seams. | It verifies the real browser components and request contracts, but not live authentication, RLS, Supabase RPCs, or OpenAI. |
 | Undo supports only entirely reversible field-update operations. | Operations containing task/risk creation or confirmation activity remain in history but cannot be undone. |
 | Authenticated production Playwright coverage is not complete. | Component, unit, build, linked SQL/RPC, and guarded journey evidence do not replace production browser QA. |
+| Analysis completion currently takes whole-table `SHARE` locks on project items and dependencies. | Finalization stays consistent, but writes in other projects may briefly wait; the P0 mitigation is a bounded, low-volume synthetic demo, with project-scoped coordination required before broader multi-tenant scale. |
+| The dependency-management UI returns at most 500 dependencies without a truncation indicator. | The 26-edge P0 fixture is complete, but larger projects must not rely on this screen as a complete inventory until pagination and an explicit completeness signal are added. |
 | Build Week scope is intentionally narrow. | No connectors, RAG, embeddings, autonomous mutation, enterprise administration, or native mobile application is included. |
 
 ## Future roadmap
@@ -300,6 +302,7 @@ Do not expose server variables to client code, point a Preview at the production
 - Add proposal editing, richer conflict handling, and clearer approval roles.
 - Add collaborative assignments, comments, notifications, search, filters, saved views, and reusable templates.
 - Add deployment observability, retention controls, abuse monitoring, and hardened operator reconciliation.
+- Replace cross-project analysis-finalization table locks with project-scoped coordination, and paginate dependency management with a visible completeness signal.
 - Explore optional integrations after the standalone workflow is reliable; connectors, embeddings, and autonomous mutation remain outside Build Week P0.
 
 ## Open-source license
