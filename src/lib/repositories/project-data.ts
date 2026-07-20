@@ -6,7 +6,7 @@ import { getDemoProjectSlug } from "@/lib/env/server";
 import type { ServerSupabaseClient } from "@/lib/supabase/server";
 
 export const projectSelector =
-  "id,workspace_id,name,slug,description,status,is_demo,created_at,updated_at,workspace:workspaces!projects_workspace_id_fkey(id,name,slug)" as const;
+  "id,workspace_id,name,slug,description,status,is_demo,workflow_generation,created_at,updated_at,workspace:workspaces!projects_workspace_id_fkey(id,name,slug)" as const;
 
 export const projectItemSelector =
   "id,workspace_id,project_id,item_key,item_type,title,description,status,priority,owner_id,start_date,due_date,event_date,version,updated_at,owner:profiles!project_items_owner_id_fkey(id,display_name,avatar_url)" as const;

@@ -32,6 +32,13 @@ import { initialRecordActionState } from "@/app/app/project-record-action-state"
 const projectId = "8d2baf13-b687-4987-83a0-0b1294b0f001";
 const itemId = "3e14b4a4-421d-4d6d-8a7e-01d5a22e3002";
 const upstreamId = "b993a2d1-8060-4c96-a7d0-e79f4cd43303";
+const workflowGeneration = 4;
+const createItemKey = "inordo-ui:create-item:00000000-0000-4000-8000-000000000001";
+const updateItemKey = "inordo-ui:update-item:00000000-0000-4000-8000-000000000002";
+const createDependencyKey =
+  "inordo-ui:create-dependency:00000000-0000-4000-8000-000000000003";
+const removeDependencyKey =
+  "inordo-ui:remove-dependency:00000000-0000-4000-8000-000000000004";
 
 describe("project record Server Actions", () => {
   beforeEach(() => {
@@ -58,12 +65,16 @@ describe("project record Server Actions", () => {
     form.set("title", "Prepare invitations");
     form.set("status", "not_started");
     form.set("priority", "high");
+    form.set("expectedWorkflowGeneration", String(workflowGeneration));
+    form.set("idempotencyKey", createItemKey);
 
     await expect(
       createProjectItemAction(initialRecordActionState, form),
     ).resolves.toMatchObject({ status: "success" });
     expect(operationMocks.createItem).toHaveBeenCalledWith({
       projectId,
+      expectedWorkflowGeneration: workflowGeneration,
+      idempotencyKey: createItemKey,
       itemKey: "OPS-13",
       itemType: "task",
       title: "Prepare invitations",
@@ -83,6 +94,8 @@ describe("project record Server Actions", () => {
     form.set("projectId", projectId);
     form.set("itemId", itemId);
     form.set("expectedVersion", "7");
+    form.set("expectedWorkflowGeneration", String(workflowGeneration));
+    form.set("idempotencyKey", updateItemKey);
     form.set("status", "at_risk");
 
     await updateProjectItemAction(initialRecordActionState, form);
@@ -91,6 +104,8 @@ describe("project record Server Actions", () => {
       projectId,
       itemId,
       expectedVersion: 7,
+      expectedWorkflowGeneration: workflowGeneration,
+      idempotencyKey: updateItemKey,
       status: "at_risk",
     });
     expect(revalidatePath).toHaveBeenCalledWith("/app", "layout");
@@ -102,15 +117,27 @@ describe("project record Server Actions", () => {
     createForm.set("fromItemId", itemId);
     createForm.set("toItemId", upstreamId);
     createForm.set("relationship", "requires");
+    createForm.set(
+      "expectedWorkflowGeneration",
+      String(workflowGeneration),
+    );
+    createForm.set("idempotencyKey", createDependencyKey);
     await createDependencyAction(initialRecordActionState, createForm);
 
     const removeForm = new FormData();
     removeForm.set("projectId", projectId);
     removeForm.set("dependencyId", upstreamId);
+    removeForm.set(
+      "expectedWorkflowGeneration",
+      String(workflowGeneration),
+    );
+    removeForm.set("idempotencyKey", removeDependencyKey);
     await removeDependencyAction(initialRecordActionState, removeForm);
 
     expect(operationMocks.createDependency).toHaveBeenCalledWith({
       projectId,
+      expectedWorkflowGeneration: workflowGeneration,
+      idempotencyKey: createDependencyKey,
       fromItemId: itemId,
       toItemId: upstreamId,
       relationship: "requires",
@@ -119,6 +146,8 @@ describe("project record Server Actions", () => {
     expect(operationMocks.removeDependency).toHaveBeenCalledWith({
       projectId,
       dependencyId: upstreamId,
+      expectedWorkflowGeneration: workflowGeneration,
+      idempotencyKey: removeDependencyKey,
     });
   });
 
@@ -133,6 +162,8 @@ describe("project record Server Actions", () => {
     form.set("projectId", projectId);
     form.set("itemId", itemId);
     form.set("expectedVersion", "3");
+    form.set("expectedWorkflowGeneration", String(workflowGeneration));
+    form.set("idempotencyKey", updateItemKey);
     form.set("status", "blocked");
 
     await expect(
@@ -141,6 +172,31 @@ describe("project record Server Actions", () => {
       status: "conflict",
       message:
         "Conflict: This item changed since you loaded it. Refresh and try again.",
+      idempotencyKeyDisposition: "rotate",
+    });
+    expect(revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("retains the key only when an unexpected outcome is ambiguous", async () => {
+    operationMocks.removeDependency.mockRejectedValueOnce(
+      new ProjectRecordError(
+        "internal",
+        "The database response could not be validated.",
+      ),
+    );
+    const form = new FormData();
+    form.set("projectId", projectId);
+    form.set("dependencyId", upstreamId);
+    form.set("expectedWorkflowGeneration", String(workflowGeneration));
+    form.set("idempotencyKey", removeDependencyKey);
+
+    await expect(
+      removeDependencyAction(initialRecordActionState, form),
+    ).resolves.toEqual({
+      status: "error",
+      message:
+        "The result could not be confirmed. Retry the unchanged form to safely check the same request.",
+      idempotencyKeyDisposition: "retain",
     });
     expect(revalidatePath).not.toHaveBeenCalled();
   });

@@ -36,6 +36,7 @@ export default async function ProjectDependenciesPage({
           status: item.status,
         }))}
         projectId={overview.project.id}
+        workflowGeneration={overview.project.workflow_generation}
       />
     </main>
   );

@@ -52,6 +52,7 @@ export default async function ProjectItemsPage() {
           displayName: member.name,
         }))}
         projectId={overview.project.id}
+        workflowGeneration={overview.project.workflow_generation}
       />
     </main>
   );

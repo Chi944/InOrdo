@@ -3,7 +3,6 @@ import "server-only";
 import { z, type ZodType } from "zod";
 
 import type {
-  ProjectItemPatch,
   ProjectRecordAuthorizer,
   ProjectRecordStore,
 } from "@/features/project-records/contracts";
@@ -35,12 +34,12 @@ const authorizeProjectRecord: ProjectRecordAuthorizer = async (
   projectId,
   allowedRoles,
 ) => {
-  const { user, scope } = await requireCurrentUserProjectAccess(
+  const { scope } = await requireCurrentUserProjectAccess(
     client,
     projectId,
     allowedRoles,
   );
-  return { userId: user.id, scope };
+  return { scope };
 };
 
 function parseInput<Result>(schema: ZodType<Result>, input: unknown): Result {
@@ -52,21 +51,6 @@ function parseInput<Result>(schema: ZodType<Result>, input: unknown): Result {
     );
   }
   return result.data;
-}
-
-function updatePatch(input: z.infer<typeof updateProjectItemSchema>) {
-  const patch: ProjectItemPatch = {};
-  if (input.itemKey !== undefined) patch.itemKey = input.itemKey;
-  if (input.itemType !== undefined) patch.itemType = input.itemType;
-  if (input.title !== undefined) patch.title = input.title;
-  if (input.description !== undefined) patch.description = input.description;
-  if (input.status !== undefined) patch.status = input.status;
-  if (input.priority !== undefined) patch.priority = input.priority;
-  if (input.ownerId !== undefined) patch.ownerId = input.ownerId;
-  if (input.startDate !== undefined) patch.startDate = input.startDate;
-  if (input.dueDate !== undefined) patch.dueDate = input.dueDate;
-  if (input.eventDate !== undefined) patch.eventDate = input.eventDate;
-  return patch;
 }
 
 type CreateProjectRecordOperationsOptions = {
@@ -89,21 +73,7 @@ export function createProjectRecordOperations({
         workspaceContributorRoles,
       );
 
-      if (
-        record.ownerId &&
-        !(await store.hasWorkspaceMember(authorization.scope, record.ownerId))
-      ) {
-        throw new ProjectRecordError(
-          "invalid_reference",
-          "The selected owner is not a member of this workspace.",
-        );
-      }
-
-      return store.createItem(
-        authorization.scope,
-        authorization.userId,
-        record,
-      );
+      return store.createItem(authorization.scope, record);
     },
 
     async updateItem(input: unknown) {
@@ -113,62 +83,7 @@ export function createProjectRecordOperations({
         record.projectId,
         workspaceContributorRoles,
       );
-      const current = await store.getItem(authorization.scope, record.itemId);
-
-      if (!current) {
-        throw new ProjectRecordError("not_found", "The project item was not found.");
-      }
-      if (current.version !== record.expectedVersion) {
-        throw new ProjectRecordError(
-          "conflict",
-          "This item changed since you loaded it. Refresh and try again.",
-        );
-      }
-
-      const patch = updatePatch(record);
-      const nextItemType = patch.itemType ?? current.item_type;
-      const nextStartDate =
-        patch.startDate !== undefined ? patch.startDate : current.start_date;
-      const nextDueDate =
-        patch.dueDate !== undefined ? patch.dueDate : current.due_date;
-      const nextEventDate =
-        patch.eventDate !== undefined ? patch.eventDate : current.event_date;
-
-      if (nextStartDate && nextDueDate && nextStartDate > nextDueDate) {
-        throw new ProjectRecordError(
-          "validation",
-          "Start date must be on or before due date.",
-        );
-      }
-      if (nextItemType !== "event" && nextEventDate) {
-        throw new ProjectRecordError(
-          "validation",
-          "Event date is only allowed for event items.",
-        );
-      }
-      if (
-        typeof patch.ownerId === "string" &&
-        !(await store.hasWorkspaceMember(authorization.scope, patch.ownerId))
-      ) {
-        throw new ProjectRecordError(
-          "invalid_reference",
-          "The selected owner is not a member of this workspace.",
-        );
-      }
-
-      const updated = await store.updateItem(
-        authorization.scope,
-        record.itemId,
-        record.expectedVersion,
-        patch,
-      );
-      if (!updated) {
-        throw new ProjectRecordError(
-          "conflict",
-          "This item changed since you loaded it. Refresh and try again.",
-        );
-      }
-      return updated;
+      return store.updateItem(authorization.scope, record);
     },
 
     async listItems(projectId: unknown, input: unknown = {}) {
@@ -189,21 +104,7 @@ export function createProjectRecordOperations({
         dependency.projectId,
         workspaceContributorRoles,
       );
-      const endpointIds = await store.getProjectItemIds(authorization.scope, [
-        dependency.fromItemId,
-        dependency.toItemId,
-      ]);
-      if (new Set(endpointIds).size !== 2) {
-        throw new ProjectRecordError(
-          "invalid_reference",
-          "Both dependency items must belong to this project.",
-        );
-      }
-      return store.createDependency(
-        authorization.scope,
-        authorization.userId,
-        dependency,
-      );
+      return store.createDependency(authorization.scope, dependency);
     },
 
     async removeDependency(input: unknown) {
@@ -213,17 +114,7 @@ export function createProjectRecordOperations({
         dependency.projectId,
         workspaceContributorRoles,
       );
-      const removed = await store.removeDependency(
-        authorization.scope,
-        dependency.dependencyId,
-      );
-      if (!removed) {
-        throw new ProjectRecordError(
-          "not_found",
-          "The dependency was not found in this project.",
-        );
-      }
-      return removed;
+      return store.removeDependency(authorization.scope, dependency);
     },
 
     async listDependencies(projectId: unknown) {

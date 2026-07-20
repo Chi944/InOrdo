@@ -38,6 +38,9 @@ describe("project data repository boundaries", () => {
 
   it("defaults canonical views to active demo records and the current workflow generation", () => {
     expect(repositorySource).toContain("async function getCurrentWorkflowGeneration(");
+    expect(repositorySource).toContain(
+      "is_demo,workflow_generation,created_at",
+    );
     expect(repositorySource).toContain('.eq("is_demo_retired", false)');
     expect(repositorySource).toContain('.eq("workflow_generation", generation)');
   });

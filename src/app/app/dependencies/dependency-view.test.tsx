@@ -13,10 +13,12 @@ vi.mock("@/app/app/project-record-actions", () => ({
   createDependencyAction: vi.fn(async () => ({
     status: "success",
     message: "Dependency added.",
+    idempotencyKeyDisposition: "rotate",
   })),
   removeDependencyAction: vi.fn(async () => ({
     status: "success",
     message: "Dependency removed.",
+    idempotencyKeyDisposition: "rotate",
   })),
 }));
 
@@ -25,7 +27,10 @@ import {
   type DependencyViewEdge,
   type DependencyViewItem,
 } from "@/app/app/dependencies/dependency-view";
-import { createDependencyAction } from "@/app/app/project-record-actions";
+import {
+  createDependencyAction,
+  removeDependencyAction,
+} from "@/app/app/project-record-actions";
 
 afterEach(() => {
   cleanup();
@@ -33,6 +38,7 @@ afterEach(() => {
 });
 
 const projectId = "8d2baf13-b687-4987-83a0-0b1294b0f001";
+const workflowGeneration = 4;
 const items: DependencyViewItem[] = [
   {
     id: "3e14b4a4-421d-4d6d-8a7e-01d5a22e3002",
@@ -82,6 +88,7 @@ describe("DependencyView", () => {
         initialSelectedItemId={items[1].id}
         items={items}
         projectId={projectId}
+        workflowGeneration={workflowGeneration}
       />,
     );
 
@@ -102,6 +109,7 @@ describe("DependencyView", () => {
         dependencies={dependencies}
         items={items}
         projectId={projectId}
+        workflowGeneration={workflowGeneration}
       />,
     );
     const itemList = screen.getByRole("list", { name: "Project items" });
@@ -125,6 +133,7 @@ describe("DependencyView", () => {
         dependencies={dependencies}
         items={items}
         projectId={projectId}
+        workflowGeneration={workflowGeneration}
       />,
     );
 
@@ -142,6 +151,7 @@ describe("DependencyView", () => {
         initialSelectedItemId={items[1].id}
         items={items}
         projectId={projectId}
+        workflowGeneration={workflowGeneration}
       />,
     );
 
@@ -197,6 +207,7 @@ describe("DependencyView", () => {
     let resolveCreate: ((value: {
       status: "success";
       message: string;
+      idempotencyKeyDisposition: "rotate";
     }) => void) | undefined;
     vi.mocked(createDependencyAction).mockImplementationOnce(
       () =>
@@ -211,6 +222,7 @@ describe("DependencyView", () => {
         initialSelectedItemId={items[1].id}
         items={items}
         projectId={projectId}
+        workflowGeneration={workflowGeneration}
       />,
     );
 
@@ -238,7 +250,11 @@ describe("DependencyView", () => {
     ).toBeVisible();
 
     await act(async () => {
-      resolveCreate?.({ status: "success", message: "Dependency added." });
+      resolveCreate?.({
+        status: "success",
+        message: "Dependency added.",
+        idempotencyKeyDisposition: "rotate",
+      });
       await Promise.resolve();
     });
     await waitFor(() =>
@@ -246,5 +262,181 @@ describe("DependencyView", () => {
         screen.queryByRole("dialog", { name: "Add a relationship" }),
       ).not.toBeInTheDocument(),
     );
+  });
+
+  it("includes the workflow generation and distinct portable keys in add and remove forms", async () => {
+    render(
+      <DependencyView
+        canEdit
+        dependencies={dependencies}
+        initialSelectedItemId={items[1].id}
+        items={items}
+        projectId={projectId}
+        workflowGeneration={workflowGeneration}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add relationship" }));
+    const addDialog = screen.getByRole("dialog", { name: "Add a relationship" });
+    const addForm = addDialog.querySelector("form");
+    const addGeneration = addForm?.querySelector<HTMLInputElement>(
+      'input[name="expectedWorkflowGeneration"]',
+    );
+    const addKey = addForm?.querySelector<HTMLInputElement>(
+      'input[name="idempotencyKey"]',
+    );
+    expect(addGeneration).toHaveValue(String(workflowGeneration));
+    await waitFor(() =>
+      expect(addKey?.value).toMatch(/^[A-Za-z0-9._:-]{8,200}$/),
+    );
+    const initialAddKey = addKey?.value;
+    fireEvent.change(within(addDialog).getByLabelText("Rationale (optional)"), {
+      target: { value: "A changed mutation payload." },
+    });
+    expect(addKey?.value).not.toBe(initialAddKey);
+    const rotatedAddKey = addKey?.value;
+    fireEvent.click(
+      within(addDialog).getByRole("button", {
+        name: "Close add relationship dialog",
+      }),
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Remove relationship: Prepare invitations depends on Confirm venue",
+      }),
+    );
+    const removeDialog = screen.getByRole("dialog", {
+      name: "Remove relationship?",
+    });
+    const removeForm = removeDialog.querySelector("form");
+    expect(
+      removeForm?.querySelector<HTMLInputElement>(
+        'input[name="expectedWorkflowGeneration"]',
+      ),
+    ).toHaveValue(String(workflowGeneration));
+    const removeKey = removeForm?.querySelector<HTMLInputElement>(
+      'input[name="idempotencyKey"]',
+    );
+    await waitFor(() =>
+      expect(removeKey?.value).toMatch(/^[A-Za-z0-9._:-]{8,200}$/),
+    );
+    expect(removeKey?.value).not.toBe(rotatedAddKey);
+  });
+
+  it("reuses the submitted key and payload for an ambiguous add retry, then rotates", async () => {
+    vi.mocked(createDependencyAction)
+      .mockResolvedValueOnce({
+        status: "error",
+        message: "Outcome unknown. Retry unchanged.",
+        idempotencyKeyDisposition: "retain",
+      })
+      .mockResolvedValueOnce({
+        status: "conflict",
+        message: "The project changed. Refresh and try again.",
+        idempotencyKeyDisposition: "rotate",
+      });
+    render(
+      <DependencyView
+        canEdit
+        dependencies={dependencies}
+        initialSelectedItemId={items[1].id}
+        items={items}
+        projectId={projectId}
+        workflowGeneration={workflowGeneration}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add relationship" }));
+    const dialog = screen.getByRole("dialog", { name: "Add a relationship" });
+    const keyInput = dialog.querySelector<HTMLInputElement>(
+      'input[name="idempotencyKey"]',
+    );
+    await waitFor(() =>
+      expect(keyInput?.value).toMatch(/^[A-Za-z0-9._:-]{8,200}$/),
+    );
+    fireEvent.change(within(dialog).getByLabelText("Relationship"), {
+      target: { value: "informs" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("Rationale (optional)"), {
+      target: { value: "The confirmed venue informs the invitation plan." },
+    });
+    const submittedKey = keyInput?.value;
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Add relationship" }));
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+      "Outcome unknown. Retry unchanged.",
+    );
+    fireEvent.click(within(dialog).getByRole("button", { name: "Add relationship" }));
+    await waitFor(() =>
+      expect(vi.mocked(createDependencyAction)).toHaveBeenCalledTimes(2),
+    );
+
+    const firstAttempt = vi.mocked(createDependencyAction).mock.calls[0]?.[1];
+    const secondAttempt = vi.mocked(createDependencyAction).mock.calls[1]?.[1];
+    expect(firstAttempt).toBeInstanceOf(FormData);
+    expect(secondAttempt).toBeInstanceOf(FormData);
+    expect(Array.from((secondAttempt as FormData).entries())).toEqual(
+      Array.from((firstAttempt as FormData).entries()),
+    );
+    expect((secondAttempt as FormData).get("idempotencyKey")).toBe(submittedKey);
+    await waitFor(() => expect(keyInput?.value).not.toBe(submittedKey));
+  });
+
+  it("reuses the submitted key and payload for an ambiguous removal retry, then rotates", async () => {
+    vi.mocked(removeDependencyAction)
+      .mockResolvedValueOnce({
+        status: "error",
+        message: "Outcome unknown. Retry unchanged.",
+        idempotencyKeyDisposition: "retain",
+      })
+      .mockResolvedValueOnce({
+        status: "conflict",
+        message: "The project changed. Refresh and try again.",
+        idempotencyKeyDisposition: "rotate",
+      });
+    render(
+      <DependencyView
+        canEdit
+        dependencies={dependencies}
+        initialSelectedItemId={items[1].id}
+        items={items}
+        projectId={projectId}
+        workflowGeneration={workflowGeneration}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Remove relationship: Prepare invitations depends on Confirm venue",
+      }),
+    );
+    const dialog = screen.getByRole("dialog", { name: "Remove relationship?" });
+    const keyInput = dialog.querySelector<HTMLInputElement>(
+      'input[name="idempotencyKey"]',
+    );
+    await waitFor(() =>
+      expect(keyInput?.value).toMatch(/^[A-Za-z0-9._:-]{8,200}$/),
+    );
+    const submittedKey = keyInput?.value;
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Confirm removal" }));
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+      "Outcome unknown. Retry unchanged.",
+    );
+    fireEvent.click(within(dialog).getByRole("button", { name: "Confirm removal" }));
+    await waitFor(() =>
+      expect(vi.mocked(removeDependencyAction)).toHaveBeenCalledTimes(2),
+    );
+
+    const firstAttempt = vi.mocked(removeDependencyAction).mock.calls[0]?.[1];
+    const secondAttempt = vi.mocked(removeDependencyAction).mock.calls[1]?.[1];
+    expect(firstAttempt).toBeInstanceOf(FormData);
+    expect(secondAttempt).toBeInstanceOf(FormData);
+    expect(Array.from((secondAttempt as FormData).entries())).toEqual(
+      Array.from((firstAttempt as FormData).entries()),
+    );
+    expect((secondAttempt as FormData).get("idempotencyKey")).toBe(submittedKey);
+    await waitFor(() => expect(keyInput?.value).not.toBe(submittedKey));
   });
 });

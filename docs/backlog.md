@@ -16,6 +16,7 @@
 - [x] Implement and linked-verify authorized, idempotent, reversible internal operation contracts.
 - [x] Implement and linked-verify operation history, undo, and isolated demo reset contracts.
 - [x] Build the integrated end-to-end demo workspace and CI-safe core browser journey.
+- [ ] Complete the native-mutation expand/deploy/contract release: apply `20260719140000` only after exact approval, deploy and verify the four RPC mutations, then ship and verify the separate direct-DML contract migration.
 - [ ] Complete the operator-held live production smoke path for authentication, Supabase/RLS, one funded GPT-5.6 analysis, selective apply, audit, undo, and reset.
 
 ## P1
@@ -25,6 +26,11 @@
 - [ ] Search, filtering, saved views, and reusable project templates.
 - [ ] Observability, retention policy, and hardened failure recovery.
 - [ ] Paginate project/dependency presentation beyond the bounded P0 fixture and split the large impact workflow client boundary.
+
+## P2 scaling follow-ups
+
+- [ ] Replace `complete_project_analysis` whole-table `SHARE` locks with measured project-scoped coordination that preserves revision consistency, atomic completion, and late-worker fencing. Until then, monitor lock waits and completion latency and keep the workflow to the low-volume synthetic demo.
+- [ ] Paginate the dependency-management repository beyond 500 rows and surface an explicit completeness/truncation state. Until then, keep supported demo projects below the cap and do not present that screen as a complete large-project inventory.
 
 ## Explicitly deferred
 

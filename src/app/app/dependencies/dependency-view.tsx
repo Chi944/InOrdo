@@ -2,6 +2,7 @@
 
 import {
   useActionState,
+  useCallback,
   useEffect,
   useId,
   useMemo,
@@ -11,8 +12,10 @@ import {
 
 import {
   initialRecordActionState,
+  restoreRecordMutationForm,
   type RecordActionState,
 } from "@/app/app/project-record-action-state";
+import { createOperationIdempotencyKey } from "@/app/app/operation-idempotency";
 import { maximumDependencyRationaleLength } from "@/features/project-records/constants";
 import {
   createDependencyAction,
@@ -43,6 +46,7 @@ export type DependencyViewEdge = {
 
 export type DependencyViewProps = {
   projectId: string;
+  workflowGeneration: number;
   items: DependencyViewItem[];
   dependencies: DependencyViewEdge[];
   canEdit: boolean;
@@ -97,6 +101,27 @@ function ActionFeedback({
   );
 }
 
+function useMutationIdempotencyKey(
+  scope: string,
+  state: typeof initialRecordActionState,
+) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const rotateKey = useCallback(() => {
+    const key = createOperationIdempotencyKey(scope);
+    if (inputRef.current) inputRef.current.value = key;
+  }, [scope]);
+
+  useEffect(() => {
+    rotateKey();
+  }, [rotateKey]);
+
+  useEffect(() => {
+    if (state.idempotencyKeyDisposition === "rotate") rotateKey();
+  }, [rotateKey, state]);
+
+  return { inputRef, rotateKey };
+}
+
 function RelationshipDetails({
   dependency,
 }: {
@@ -124,15 +149,19 @@ function RemoveRelationshipForm({
   onResult,
   projectId,
   upstream,
+  workflowGeneration,
 }: {
   dependency: DependencyViewEdge;
   dependent: DependencyViewItem | undefined;
   onResult: (result: RecordActionState) => void;
   projectId: string;
   upstream: DependencyViewItem | undefined;
+  workflowGeneration: number;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const submittedFormRef = useRef<FormData | null>(null);
   const titleId = useId();
   const descriptionId = useId();
   const [state, action, pending] = useActionState(
@@ -143,11 +172,29 @@ function RemoveRelationshipForm({
     },
     initialRecordActionState,
   );
+  const { inputRef: idempotencyKeyInputRef } = useMutationIdempotencyKey(
+    `remove-dependency:${projectId}:${dependency.id}:${workflowGeneration}`,
+    state,
+  );
   const relationshipSentence = `${sentenceName(dependent)} depends on ${sentenceName(upstream)}`;
 
   useEffect(() => {
     if (state.status === "success") closeDialog();
   }, [state.status]);
+
+  useEffect(() => {
+    if (
+      (state.status === "error" || state.status === "conflict") &&
+      formRef.current &&
+      submittedFormRef.current
+    ) {
+      restoreRecordMutationForm(
+        formRef.current,
+        submittedFormRef.current,
+        state.idempotencyKeyDisposition === "retain",
+      );
+    }
+  }, [state]);
 
   function openDialog() {
     const dialog = dialogRef.current;
@@ -184,9 +231,22 @@ function RemoveRelationshipForm({
         onClose={() => triggerRef.current?.focus()}
         ref={dialogRef}
       >
-        <form action={action} className="p-5 sm:p-6">
+        <form
+          action={action}
+          className="p-5 sm:p-6"
+          onSubmit={(event) => {
+            submittedFormRef.current = new FormData(event.currentTarget);
+          }}
+          ref={formRef}
+        >
           <input name="projectId" type="hidden" value={projectId} />
           <input name="dependencyId" type="hidden" value={dependency.id} />
+          <input
+            name="expectedWorkflowGeneration"
+            type="hidden"
+            value={workflowGeneration}
+          />
+          <input name="idempotencyKey" ref={idempotencyKeyInputRef} type="hidden" />
           <p className="font-mono text-[0.63rem] uppercase tracking-[0.13em] text-caution">
             Confirm relationship removal
           </p>
@@ -234,6 +294,7 @@ function RelationshipCard({
   onResult,
   projectId,
   upstream,
+  workflowGeneration,
 }: {
   canEdit: boolean;
   dependency: DependencyViewEdge;
@@ -241,6 +302,7 @@ function RelationshipCard({
   onResult: (result: RecordActionState) => void;
   projectId: string;
   upstream: DependencyViewItem | undefined;
+  workflowGeneration: number;
 }) {
   return (
     <article className="border border-rule bg-white p-4">
@@ -258,6 +320,7 @@ function RelationshipCard({
           onResult={onResult}
           projectId={projectId}
           upstream={upstream}
+          workflowGeneration={workflowGeneration}
         />
       ) : null}
     </article>
@@ -270,12 +333,14 @@ function AddRelationshipDialog({
   onClose,
   onResult,
   projectId,
+  workflowGeneration,
 }: {
   initialDependentId: string;
   items: DependencyViewItem[];
   onClose: () => void;
   onResult: (result: RecordActionState) => void;
   projectId: string;
+  workflowGeneration: number;
 }) {
   const titleId = useId();
   const descriptionId = useId();
@@ -285,6 +350,8 @@ function AddRelationshipDialog({
   const rationaleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const dependentSelectRef = useRef<HTMLSelectElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const submittedFormRef = useRef<FormData | null>(null);
   const [dependentItemId, setDependentItemId] = useState(
     items.some((item) => item.id === initialDependentId)
       ? initialDependentId
@@ -301,6 +368,11 @@ function AddRelationshipDialog({
     },
     initialRecordActionState,
   );
+  const { inputRef: idempotencyKeyInputRef, rotateKey } =
+    useMutationIdempotencyKey(
+      `create-dependency:${projectId}:${workflowGeneration}`,
+      state,
+    );
 
   const upstreamOptions = items.filter((item) => item.id !== dependentItemId);
   const effectiveUpstreamItemId = upstreamOptions.some(
@@ -321,6 +393,20 @@ function AddRelationshipDialog({
   useEffect(() => {
     if (state.status === "success") onClose();
   }, [onClose, state.status]);
+
+  useEffect(() => {
+    if (
+      (state.status === "error" || state.status === "conflict") &&
+      formRef.current &&
+      submittedFormRef.current
+    ) {
+      restoreRecordMutationForm(
+        formRef.current,
+        submittedFormRef.current,
+        state.idempotencyKeyDisposition === "retain",
+      );
+    }
+  }, [state]);
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Escape") {
@@ -393,8 +479,19 @@ function AddRelationshipDialog({
           action={action}
           aria-busy={pending}
           className="grid gap-4 p-5 sm:grid-cols-2 sm:p-6"
+          onChange={rotateKey}
+          onSubmit={(event) => {
+            submittedFormRef.current = new FormData(event.currentTarget);
+          }}
+          ref={formRef}
         >
           <input name="projectId" type="hidden" value={projectId} />
+          <input
+            name="expectedWorkflowGeneration"
+            type="hidden"
+            value={workflowGeneration}
+          />
+          <input name="idempotencyKey" ref={idempotencyKeyInputRef} type="hidden" />
           <label className="text-sm font-medium text-ink" htmlFor={dependentId}>
             Dependent item
             <select
@@ -507,6 +604,7 @@ export function DependencyView({
   initialSelectedItemId,
   items,
   projectId,
+  workflowGeneration,
 }: DependencyViewProps) {
   const searchId = useId();
   const [query, setQuery] = useState("");
@@ -701,6 +799,7 @@ export function DependencyView({
                           onResult={setActionResult}
                           projectId={projectId}
                           upstream={itemsById.get(dependency.toItemId)}
+                          workflowGeneration={workflowGeneration}
                         />
                       ))}
                     </div>
@@ -729,6 +828,7 @@ export function DependencyView({
                           onResult={setActionResult}
                           projectId={projectId}
                           upstream={selectedItem}
+                          workflowGeneration={workflowGeneration}
                         />
                       ))}
                     </div>
@@ -788,6 +888,7 @@ export function DependencyView({
           onClose={() => setDialogOpen(false)}
           onResult={setActionResult}
           projectId={projectId}
+          workflowGeneration={workflowGeneration}
         />
       ) : null}
     </section>

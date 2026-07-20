@@ -41,6 +41,29 @@ const dependencyIdSchema = z.uuid({
   error: "Dependency ID must be a valid UUID.",
 });
 
+const expectedWorkflowGenerationSchema = z
+  .number({ error: "Expected workflow generation must be a number." })
+  .int("Expected workflow generation must be an integer.")
+  .positive("Expected workflow generation must be a positive integer.")
+  .max(
+    Number.MAX_SAFE_INTEGER,
+    "Expected workflow generation must be a safe integer.",
+  );
+
+const idempotencyKeySchema = z
+  .string({ error: "Idempotency key is required." })
+  .min(8, "Idempotency key must be at least 8 characters.")
+  .max(200, "Idempotency key must be 200 characters or fewer.")
+  .regex(/^[A-Za-z0-9._:-]+$/, {
+    error:
+      "Use only letters, numbers, periods, underscores, colons, and hyphens.",
+  });
+
+const mutationGuardFields = {
+  expectedWorkflowGeneration: expectedWorkflowGenerationSchema,
+  idempotencyKey: idempotencyKeySchema,
+} as const;
+
 const itemKeySchema = z
   .string()
   .trim()
@@ -123,6 +146,7 @@ function addProjectItemDateRules(
 export const createProjectItemSchema = z
   .object({
     projectId: projectIdSchema,
+    ...mutationGuardFields,
     ...projectItemFields,
     description: projectItemFields.description.optional(),
     status: projectItemFields.status.default("not_started"),
@@ -139,10 +163,12 @@ export const updateProjectItemSchema = z
   .object({
     projectId: projectIdSchema,
     itemId: itemIdSchema,
+    ...mutationGuardFields,
     expectedVersion: z
       .number({ error: "Expected version must be a number." })
       .int("Expected version must be an integer.")
-      .positive("Expected version must be a positive integer."),
+      .positive("Expected version must be a positive integer.")
+      .max(Number.MAX_SAFE_INTEGER, "Expected version must be a safe integer."),
     itemKey: projectItemFields.itemKey.optional(),
     itemType: projectItemFields.itemType.optional(),
     title: projectItemFields.title.optional(),
@@ -157,7 +183,14 @@ export const updateProjectItemSchema = z
   .strict()
   .superRefine((value, context) => {
     const patchKeys = Object.keys(value).filter(
-      (key) => !["projectId", "itemId", "expectedVersion"].includes(key),
+      (key) =>
+        ![
+          "projectId",
+          "itemId",
+          "expectedVersion",
+          "expectedWorkflowGeneration",
+          "idempotencyKey",
+        ].includes(key),
     );
 
     if (patchKeys.length === 0) {
@@ -173,6 +206,7 @@ export const updateProjectItemSchema = z
 export const createDependencySchema = z
   .object({
     projectId: projectIdSchema,
+    ...mutationGuardFields,
     fromItemId: itemIdSchema,
     toItemId: itemIdSchema,
     relationship: z
@@ -197,6 +231,7 @@ export const deleteDependencySchema = z
   .object({
     projectId: projectIdSchema,
     dependencyId: dependencyIdSchema,
+    ...mutationGuardFields,
   })
   .strict();
 

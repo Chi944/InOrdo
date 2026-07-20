@@ -35,6 +35,10 @@ type DatabaseErrorShape = {
 };
 
 const mappedDatabaseErrors = {
+  "40001": [
+    "conflict",
+    "This project changed while the request was in progress. Refresh and try again.",
+  ],
   "23503": [
     "invalid_reference",
     "A selected project record is no longer available.",

@@ -1,13 +1,20 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/app/app/project-record-actions", () => ({
-  createProjectItemAction: vi.fn(async () => ({
-    status: "success",
-    message: "Project item created.",
-  })),
+const actionMocks = vi.hoisted(() => ({
+  createProjectItemAction: vi.fn(),
 }));
+
+vi.mock("@/app/app/project-record-actions", () => actionMocks);
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),
 }));
@@ -19,7 +26,16 @@ import {
 
 afterEach(cleanup);
 
+beforeEach(() => {
+  actionMocks.createProjectItemAction.mockReset().mockResolvedValue({
+    status: "success",
+    message: "Project item created.",
+    idempotencyKeyDisposition: "rotate",
+  });
+});
+
 const projectId = "8d2baf13-b687-4987-83a0-0b1294b0f001";
+const workflowGeneration = 4;
 const memberOptions = [
   {
     id: "3e14b4a4-421d-4d6d-8a7e-01d5a22e3002",
@@ -80,6 +96,7 @@ function renderView(overrides: Partial<React.ComponentProps<typeof ProjectItemsV
       items={items}
       memberOptions={memberOptions}
       projectId={projectId}
+      workflowGeneration={workflowGeneration}
       {...overrides}
     />,
   );
@@ -196,6 +213,20 @@ describe("ProjectItemsView", () => {
       "name",
       "eventDate",
     );
+    const form = dialog.querySelector("form");
+    const generationInput = form?.querySelector<HTMLInputElement>(
+      'input[name="expectedWorkflowGeneration"]',
+    );
+    const keyInput = form?.querySelector<HTMLInputElement>(
+      'input[name="idempotencyKey"]',
+    );
+    expect(generationInput).toHaveValue(String(workflowGeneration));
+    await waitFor(() =>
+      expect(keyInput?.value).toMatch(/^[A-Za-z0-9._:-]{8,200}$/),
+    );
+    const originalKey = keyInput?.value;
+    await user.type(screen.getByLabelText("Title"), "Draft agenda");
+    expect(keyInput?.value).not.toBe(originalKey);
     expect(
       within(dialog).getByRole("option", { name: "Mina Rahman" }),
     ).toHaveValue(memberOptions[0].id);
@@ -216,5 +247,172 @@ describe("ProjectItemsView", () => {
     expect(
       screen.getByText("This project does not have any visible records."),
     ).toBeInTheDocument();
+  });
+
+  it("keeps every create control and dialog exit locked while creation is pending", async () => {
+    let resolveCreate:
+      | ((value: {
+          status: "error";
+          message: string;
+          idempotencyKeyDisposition: "retain";
+        }) => void)
+      | undefined;
+    actionMocks.createProjectItemAction.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveCreate = resolve;
+        }),
+    );
+    const user = userEvent.setup();
+    renderView();
+
+    await user.click(screen.getByRole("button", { name: "Create item" }));
+    const dialog = screen.getByRole("dialog", { name: "Create project item" });
+    const form = dialog.querySelector("form");
+    await user.type(within(dialog).getByLabelText(/Item key/i), "EVENT-99");
+    await user.type(within(dialog).getByLabelText("Title"), "Confirm accessibility");
+    await user.type(within(dialog).getByLabelText(/Event date/), "2026-09-26");
+    await user.click(within(dialog).getByRole("button", { name: "Create item" }));
+
+    await waitFor(() => expect(form).toHaveAttribute("aria-busy", "true"));
+    for (const label of [
+      /Item key/i,
+      "Title",
+      "Type",
+      "Status",
+      "Priority",
+      "Assignee",
+      /Description/,
+      /Start date/,
+      /Due date/,
+      /Event date/,
+    ]) {
+      expect(within(dialog).getByLabelText(label)).toBeDisabled();
+    }
+    expect(
+      within(dialog).getByRole("button", { name: "Close create item dialog" }),
+    ).toBeDisabled();
+    expect(within(dialog).getByRole("button", { name: "Cancel" })).toBeDisabled();
+    expect(
+      within(dialog).getByRole("button", { name: /Creating item/ }),
+    ).toBeDisabled();
+
+    const submittedForm = actionMocks.createProjectItemAction.mock.calls[0]?.[1];
+    expect(submittedForm).toBeInstanceOf(FormData);
+    expect((submittedForm as FormData).get("expectedWorkflowGeneration")).toBe(
+      String(workflowGeneration),
+    );
+    expect((submittedForm as FormData).get("idempotencyKey")).toMatch(
+      /^[A-Za-z0-9._:-]{8,200}$/,
+    );
+
+    fireEvent.keyDown(dialog, { key: "Escape" });
+    fireEvent(dialog, new Event("cancel", { bubbles: true, cancelable: true }));
+    expect(dialog).toHaveAttribute("open");
+
+    await act(async () => {
+      resolveCreate?.({
+        status: "error",
+        message: "Outcome unknown. Retry unchanged.",
+        idempotencyKeyDisposition: "retain",
+      });
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(form).toHaveAttribute("aria-busy", "false"));
+    expect(within(dialog).getByLabelText(/Item key/i)).toHaveValue("EVENT-99");
+    expect(within(dialog).getByLabelText("Title")).toHaveValue(
+      "Confirm accessibility",
+    );
+    expect(within(dialog).getByLabelText(/Event date/)).toHaveValue("2026-09-26");
+  });
+
+  it("retains one key for identical ambiguous retries and rotates it after success", async () => {
+    const user = userEvent.setup();
+    actionMocks.createProjectItemAction
+      .mockResolvedValueOnce({
+        status: "error",
+        message: "Outcome unknown. Retry unchanged.",
+        idempotencyKeyDisposition: "retain",
+      })
+      .mockResolvedValueOnce({
+        status: "error",
+        message: "Outcome unknown. Retry unchanged.",
+        idempotencyKeyDisposition: "retain",
+      })
+      .mockResolvedValueOnce({
+        status: "success",
+        message: "Project item created.",
+        idempotencyKeyDisposition: "rotate",
+      });
+    renderView();
+
+    await user.click(screen.getByRole("button", { name: "Create item" }));
+    const dialog = screen.getByRole("dialog", { name: "Create project item" });
+    const form = dialog.querySelector("form");
+    const keyInput = form?.querySelector<HTMLInputElement>(
+      'input[name="idempotencyKey"]',
+    );
+    await waitFor(() =>
+      expect(keyInput?.value).toMatch(/^[A-Za-z0-9._:-]{8,200}$/),
+    );
+    await user.type(screen.getByLabelText(/Item key/i), "TASK-99");
+    await user.type(screen.getByLabelText("Title"), "Confirm accessibility");
+    const submittedKey = keyInput?.value;
+
+    await user.click(within(dialog).getByRole("button", { name: "Create item" }));
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+      "Outcome unknown. Retry unchanged.",
+    );
+    await user.click(within(dialog).getByRole("button", { name: "Create item" }));
+    await waitFor(() =>
+      expect(actionMocks.createProjectItemAction).toHaveBeenCalledTimes(2),
+    );
+
+    const firstAttempt = actionMocks.createProjectItemAction.mock.calls[0]?.[1];
+    const secondAttempt = actionMocks.createProjectItemAction.mock.calls[1]?.[1];
+    expect(firstAttempt).toBeInstanceOf(FormData);
+    expect(secondAttempt).toBeInstanceOf(FormData);
+    expect((firstAttempt as FormData).get("idempotencyKey")).toBe(submittedKey);
+    expect((secondAttempt as FormData).get("idempotencyKey")).toBe(submittedKey);
+    expect(Array.from((secondAttempt as FormData).entries())).toEqual(
+      Array.from((firstAttempt as FormData).entries()),
+    );
+    expect(keyInput?.value).toBe(submittedKey);
+
+    await user.click(within(dialog).getByRole("button", { name: "Create item" }));
+    await within(dialog).findByRole("status");
+    await waitFor(() => expect(keyInput?.value).not.toBe(submittedKey));
+  });
+
+  it("rotates the key when a refreshed server generation changes the hidden payload", async () => {
+    const user = userEvent.setup();
+    const view = renderView();
+
+    await user.click(screen.getByRole("button", { name: "Create item" }));
+    const dialog = screen.getByRole("dialog", { name: "Create project item" });
+    const keyInput = dialog.querySelector<HTMLInputElement>(
+      'input[name="idempotencyKey"]',
+    );
+    await waitFor(() =>
+      expect(keyInput?.value).toMatch(/^[A-Za-z0-9._:-]{8,200}$/),
+    );
+    const originalKey = keyInput?.value;
+
+    view.rerender(
+      <ProjectItemsView
+        canEdit
+        items={items}
+        memberOptions={memberOptions}
+        projectId={projectId}
+        workflowGeneration={workflowGeneration + 1}
+      />,
+    );
+
+    expect(
+      dialog.querySelector<HTMLInputElement>(
+        'input[name="expectedWorkflowGeneration"]',
+      ),
+    ).toHaveValue(String(workflowGeneration + 1));
+    await waitFor(() => expect(keyInput?.value).not.toBe(originalKey));
   });
 });

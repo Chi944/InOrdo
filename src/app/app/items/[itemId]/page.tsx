@@ -88,6 +88,7 @@ export default async function ProjectItemDetailPage({
           }}
           memberOptions={memberOptions}
           projectId={overview.project.id}
+          workflowGeneration={overview.project.workflow_generation}
         />
       </header>
 

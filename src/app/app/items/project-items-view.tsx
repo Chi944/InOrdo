@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   useActionState,
+  useCallback,
   useEffect,
   useId,
   useMemo,
@@ -11,8 +12,12 @@ import {
   useState,
 } from "react";
 
-import { initialRecordActionState } from "@/app/app/project-record-action-state";
+import {
+  initialRecordActionState,
+  restoreRecordMutationForm,
+} from "@/app/app/project-record-action-state";
 import { createProjectItemAction } from "@/app/app/project-record-actions";
+import { createOperationIdempotencyKey } from "@/app/app/operation-idempotency";
 
 export type ProjectItemType =
   | "task"
@@ -53,6 +58,7 @@ export type ProjectItemsViewItem = {
 
 export type ProjectItemsViewProps = {
   projectId: string;
+  workflowGeneration: number;
   items: ProjectItemsViewItem[];
   memberOptions: ProjectMemberOption[];
   canEdit: boolean;
@@ -166,18 +172,42 @@ function PriorityBadge({ priority }: { priority: ProjectItemPriority }) {
   );
 }
 
+function useMutationIdempotencyKey(
+  scope: string,
+  state: typeof initialRecordActionState,
+) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const rotateKey = useCallback(() => {
+    const key = createOperationIdempotencyKey(scope);
+    if (inputRef.current) inputRef.current.value = key;
+  }, [scope]);
+
+  useEffect(() => {
+    rotateKey();
+  }, [rotateKey]);
+
+  useEffect(() => {
+    if (state.idempotencyKeyDisposition === "rotate") rotateKey();
+  }, [rotateKey, state]);
+
+  return { inputRef, rotateKey };
+}
+
 function CreateItemDialog({
   projectId,
   memberOptions,
+  workflowGeneration,
 }: {
   projectId: string;
   memberOptions: ProjectMemberOption[];
+  workflowGeneration: number;
 }) {
   const prefix = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const openButtonRef = useRef<HTMLButtonElement>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const submittedFormRef = useRef<FormData | null>(null);
   const router = useRouter();
   const [state, action, isPending] = useActionState(
     createProjectItemAction,
@@ -187,10 +217,30 @@ function CreateItemDialog({
   useEffect(() => {
     if (state.status === "success") {
       formRef.current?.reset();
+      submittedFormRef.current = null;
       router.refresh();
       firstFieldRef.current?.focus();
     }
   }, [router, state.status]);
+  const { inputRef: idempotencyKeyInputRef, rotateKey } =
+    useMutationIdempotencyKey(
+      `create-item:${projectId}:${workflowGeneration}`,
+      state,
+    );
+
+  useEffect(() => {
+    if (
+      (state.status === "error" || state.status === "conflict") &&
+      formRef.current &&
+      submittedFormRef.current
+    ) {
+      restoreRecordMutationForm(
+        formRef.current,
+        submittedFormRef.current,
+        state.idempotencyKeyDisposition === "retain",
+      );
+    }
+  }, [state]);
 
   function openDialog() {
     const dialog = dialogRef.current;
@@ -205,6 +255,7 @@ function CreateItemDialog({
   }
 
   function closeDialog() {
+    if (isPending) return;
     const dialog = dialogRef.current;
     if (!dialog) return;
 
@@ -233,13 +284,13 @@ function CreateItemDialog({
         className="m-auto max-h-[calc(100%-2rem)] w-[min(44rem,calc(100%-2rem))] overflow-y-auto border border-rule bg-white p-0 text-ink shadow-2xl backdrop:bg-ink/55"
         onCancel={(event) => {
           event.preventDefault();
-          closeDialog();
+          if (!isPending) closeDialog();
         }}
         onClose={() => openButtonRef.current?.focus()}
         onKeyDown={(event) => {
           if (event.key === "Escape") {
             event.preventDefault();
-            closeDialog();
+            if (!isPending) closeDialog();
           }
         }}
         ref={dialogRef}
@@ -266,6 +317,7 @@ function CreateItemDialog({
           <button
             aria-label="Close create item dialog"
             className="inline-flex size-11 shrink-0 items-center justify-center border border-rule bg-white text-xl text-ink hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal"
+            disabled={isPending}
             onClick={closeDialog}
             type="button"
           >
@@ -277,9 +329,19 @@ function CreateItemDialog({
           action={action}
           aria-busy={isPending}
           className="grid gap-5 p-5 sm:grid-cols-2 sm:p-6"
+          onChange={rotateKey}
+          onSubmit={(event) => {
+            submittedFormRef.current = new FormData(event.currentTarget);
+          }}
           ref={formRef}
         >
           <input name="projectId" type="hidden" value={projectId} />
+          <input
+            name="expectedWorkflowGeneration"
+            type="hidden"
+            value={workflowGeneration}
+          />
+          <input name="idempotencyKey" ref={idempotencyKeyInputRef} type="hidden" />
 
           <label
             className="text-sm font-medium text-ink"
@@ -289,6 +351,7 @@ function CreateItemDialog({
             <input
               autoComplete="off"
               className={fieldClass}
+              disabled={isPending}
               id={`${prefix}-key`}
               maxLength={64}
               name="itemKey"
@@ -309,6 +372,7 @@ function CreateItemDialog({
             Title
             <input
               className={fieldClass}
+              disabled={isPending}
               id={`${prefix}-title-field`}
               maxLength={240}
               name="title"
@@ -324,6 +388,7 @@ function CreateItemDialog({
             <select
               className={fieldClass}
               defaultValue="task"
+              disabled={isPending}
               id={`${prefix}-type`}
               name="itemType"
             >
@@ -343,6 +408,7 @@ function CreateItemDialog({
             <select
               className={fieldClass}
               defaultValue="not_started"
+              disabled={isPending}
               id={`${prefix}-status`}
               name="status"
             >
@@ -362,6 +428,7 @@ function CreateItemDialog({
             <select
               className={fieldClass}
               defaultValue="medium"
+              disabled={isPending}
               id={`${prefix}-priority`}
               name="priority"
             >
@@ -381,6 +448,7 @@ function CreateItemDialog({
             <select
               className={fieldClass}
               defaultValue=""
+              disabled={isPending}
               id={`${prefix}-assignee`}
               name="ownerId"
             >
@@ -400,6 +468,7 @@ function CreateItemDialog({
             Description <span className="font-normal text-muted">(optional)</span>
             <textarea
               className={`${fieldClass} min-h-28 py-3`}
+              disabled={isPending}
               id={`${prefix}-description-field`}
               maxLength={10000}
               name="description"
@@ -414,6 +483,7 @@ function CreateItemDialog({
             Start date <span className="font-normal text-muted">(optional)</span>
             <input
               className={fieldClass}
+              disabled={isPending}
               id={`${prefix}-start-date`}
               name="startDate"
               type="date"
@@ -427,6 +497,7 @@ function CreateItemDialog({
             Due date <span className="font-normal text-muted">(optional)</span>
             <input
               className={fieldClass}
+              disabled={isPending}
               id={`${prefix}-due-date`}
               name="dueDate"
               type="date"
@@ -440,6 +511,7 @@ function CreateItemDialog({
             Event date <span className="font-normal text-muted">(events only)</span>
             <input
               className={fieldClass}
+              disabled={isPending}
               id={`${prefix}-event-date`}
               name="eventDate"
               type="date"
@@ -609,6 +681,7 @@ function ItemCards({ items }: { items: ProjectItemsViewItem[] }) {
 
 export function ProjectItemsView({
   projectId,
+  workflowGeneration,
   items,
   memberOptions,
   canEdit,
@@ -702,6 +775,7 @@ export function ProjectItemsView({
           <CreateItemDialog
             memberOptions={memberOptions}
             projectId={projectId}
+            workflowGeneration={workflowGeneration}
           />
         ) : (
           <p className="border border-rule bg-paper px-3 py-2 text-sm text-muted">

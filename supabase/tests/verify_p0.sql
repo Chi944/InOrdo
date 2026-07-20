@@ -268,18 +268,24 @@ begin
 end;
 $$;
 
--- RLS: a viewer mutation affects zero rows and leaves the record unchanged.
+-- Native records remain unavailable to viewers through table APIs. During the
+-- expand window the table grant exists for contributor compatibility, so RLS
+-- may deny with a zero-row update instead of a privilege exception.
 do $$
 declare
   changed_count integer;
   current_title text;
 begin
-  update public.project_items
-  set title = 'viewer mutation must not persist'
-  where id = '30000000-0000-4000-8000-000000000001';
-  get diagnostics changed_count = row_count;
+  begin
+    update public.project_items
+    set title = 'viewer mutation must not persist'
+    where id = '30000000-0000-4000-8000-000000000001';
+    get diagnostics changed_count = row_count;
+  exception when insufficient_privilege then
+    changed_count := 0;
+  end;
   if changed_count <> 0 then
-    raise exception 'viewer mutation unexpectedly changed % rows', changed_count;
+    raise exception 'viewer direct mutation was not denied';
   end if;
   select title into current_title
   from public.project_items
@@ -319,12 +325,16 @@ begin
     raise exception 'anonymous identity unexpectedly read a project';
   end if;
 
-  update public.project_items
-  set status = 'in_progress'
-  where id = '30000000-0000-4000-8000-000000000001';
-  get diagnostics changed_count = row_count;
+  begin
+    update public.project_items
+    set status = 'in_progress'
+    where id = '30000000-0000-4000-8000-000000000001';
+    get diagnostics changed_count = row_count;
+  exception when insufficient_privilege then
+    changed_count := 0;
+  end;
   if changed_count <> 0 then
-    raise exception 'anonymous identity unexpectedly changed a project item';
+    raise exception 'anonymous identity direct mutation was not denied';
   end if;
 end;
 $$;
