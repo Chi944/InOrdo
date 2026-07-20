@@ -59,7 +59,7 @@ For the policy-aware analysis release, use this exact forward-containment order.
 
 1. Revoke the OpenAI recording key in the provider console.
 2. Remove `OPENAI_API_KEY` from every Vercel scope where it exists.
-3. Remove `AI_GATEWAY_API_KEY` if the fallback path is implicated.
+3. Revoke or disable the dedicated Gateway key at the provider and remove `AI_GATEWAY_API_KEY` from every Vercel scope where it exists. If no dedicated key exists, record only that name-level absence.
 4. Set `ANALYSIS_MODE=disabled` and deploy a new reviewed artifact with the analyze route disabled by policy.
 5. Create, review, and apply a new numbered forward containment migration that revokes execution on `public.begin_project_analysis_with_policy` and transitions every still-`available` private recording grant to `revoked` with truthful owner/operator attribution. Do not alter `claimed` or already `revoked` grants, and do not edit the applied migration.
 6. Prove local/remote migration parity, run the rollback-wrapped policy SQL verifier or a reviewed containment-specific successor, check health, and verify viewer denial before reopening any capability.

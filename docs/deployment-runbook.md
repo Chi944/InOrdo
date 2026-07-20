@@ -25,7 +25,7 @@ Configure values interactively in Vercel's secret store. The commands below cont
 | `NEXT_PUBLIC_SUPABASE_URL` | Production | Browser-safe | Exact hosted Supabase project URL. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Production | Browser-safe | Publishable/anonymous browser key used with Auth and RLS. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Production, sensitive | Server only | Used only after request-scoped authorization by constrained persistence/operation services. |
-| `OPENAI_API_KEY` | Recording deployment only, sensitive | Server only | Enables only an approved exact recording grant; remove immediately after the recording attempt. |
+| `OPENAI_API_KEY` | Recording deployment only, sensitive | Server only | Ignored outside `recording`; enables only an approved exact recording grant and is removed immediately after the recording attempt. |
 | `OPENAI_MODEL` | Recording deployment only | Server only | Must be exactly `gpt-5.6-luna`; recording never falls back. |
 | `DEMO_PROJECT_SLUG` | Production | Server only | Selects the synthetic project for protected workspace lookup and reset. |
 | `DEMO_RESET_SECRET` | Production, sensitive | Server only | Server-held reset guard; never accepted from a browser request. |
@@ -305,7 +305,7 @@ If either provider path is suspect, execute this forward-containment sequence in
 
 1. Revoke the OpenAI recording key in the provider console.
 2. Remove `OPENAI_API_KEY` from every Vercel scope where it exists.
-3. Remove `AI_GATEWAY_API_KEY` if fallback is implicated.
+3. Revoke or disable the dedicated Gateway key at the provider and remove `AI_GATEWAY_API_KEY` from every Vercel scope where it exists. If no dedicated key exists, record only that name-level absence.
 4. Set `ANALYSIS_MODE=disabled`, create a new deployment, and verify that its analysis status is disabled.
 5. Create, review, and apply a new forward containment migration that revokes execution on `public.begin_project_analysis_with_policy` and marks every still-`available` private recording grant `revoked` with truthful owner/operator attribution. Do not edit the applied policy migration or delete grant/request/evidence history.
 6. Prove exact migration parity, run the rollback-wrapped policy SQL verifier (or a reviewed containment-specific successor if wrapper denial changes its expected contract), check health, and verify viewer denial before reopening any route.
