@@ -139,7 +139,7 @@ Stop if either status command prints a path, a gate fails, either pair of full S
 
 ## Production sequence
 
-Production deployment starts over from a clean, current `main`. Do not reuse an old preview working tree or deploy a feature branch. Generation-fenced native mutations use an explicit expand/deploy/contract rollout: `20260719140000` adds the receipt ledger and RPCs while temporarily retaining the legacy contributor DML path, the RPC-capable application is deployed and exercised, and only a later separately reviewed contract migration removes the legacy policies/grants. Never put the expand and contract migrations in the same pending `db push`.
+Production deployment starts over from a clean, current `main`. Do not reuse an old preview working tree or deploy a feature branch. The generation-fenced mutation expand/deploy/contract rollout is already complete through `20260720190000`. The next authorized database change is only `20260721100000_add_analysis_access_policy.sql`, and it requires its own fresh target, pending-set, dry-run, and action-time approval gate. Do not use an older migration approval to authorize this push.
 
 ```bash
 set -euo pipefail
@@ -169,20 +169,101 @@ git fetch --prune origin main
 test "$(git rev-parse --verify HEAD)" = "$RELEASE_SHA"
 test "$(git rev-parse --verify origin/main)" = "$RELEASE_SHA"
 test "$(git rev-list --left-right --count origin/main...HEAD | tr '\t' ' ')" = "0 0"
-EXPAND_MIGRATION_TAIL="20260719140000"
-npx --no-install supabase migration list --linked
-npx --no-install supabase db push --dry-run
+POLICY_MIGRATION_TAIL="20260721100000"
+POLICY_MIGRATION_FILENAME="${POLICY_MIGRATION_TAIL}_add_analysis_access_policy.sql"
+EXPECTED_REMOTE_TAIL="20260720190000"
+test -f "supabase/migrations/$POLICY_MIGRATION_FILENAME"
+
+# Compare the existing local link with the intended dashboard target without
+# printing either private project reference.
+test -r supabase/.temp/project-ref
+read -r -s -p 'Privately enter the intended linked Supabase project ref: ' \
+  EXPECTED_LINKED_PROJECT_REF
+printf '\n'
+test -n "$EXPECTED_LINKED_PROJECT_REF"
+LINKED_PROJECT_REF="$(tr -d '\r\n' < supabase/.temp/project-ref)"
+test -n "$LINKED_PROJECT_REF"
+test "$LINKED_PROJECT_REF" = "$EXPECTED_LINKED_PROJECT_REF"
+unset EXPECTED_LINKED_PROJECT_REF LINKED_PROJECT_REF
+
+policy_pending_set() {
+  LEDGER_JSON="$1" node <<'NODE'
+const ledger = JSON.parse(process.env.LEDGER_JSON ?? "");
+if (
+  ledger === null ||
+  typeof ledger !== "object" ||
+  Array.isArray(ledger) ||
+  Object.keys(ledger).sort().join(",") !== "message,migrations" ||
+  ledger.message !== "Migrations listed" ||
+  !Array.isArray(ledger.migrations) ||
+  ledger.migrations.length > 1000
+) process.exit(4);
+let previousTail = "";
+for (const row of ledger.migrations) {
+  if (
+    row === null ||
+    typeof row !== "object" ||
+    Array.isArray(row) ||
+    Object.keys(row).sort().join(",") !== "local,remote,time" ||
+    typeof row.local !== "string" ||
+    typeof row.remote !== "string" ||
+    (row.local !== "" && !/^\d{14}$/.test(row.local)) ||
+    (row.remote !== "" && !/^\d{14}$/.test(row.remote)) ||
+    (row.local === "" && row.remote === "") ||
+    (row.remote !== "" && row.local !== row.remote)
+  ) process.exit(4);
+  const currentTail = row.local || row.remote;
+  if (currentTail <= previousTail) process.exit(4);
+  previousTail = currentTail;
+}
+const remote = ledger.migrations.filter((row) => row.remote !== "");
+const pending = ledger.migrations.filter(
+  (row) => row.local !== "" && row.remote === "",
+);
+process.stdout.write(
+  `${remote.at(-1)?.remote ?? ""}\t${pending.map((row) => row.local).join(",")}\n`,
+);
+NODE
+}
+
+PRE_PUSH_LEDGER_JSON="$(
+  npx --no-install supabase --output-format json migration list --linked
+)"
+IFS=$'\t' read -r REMOTE_TAIL PENDING_TAILS <<< "$(
+  policy_pending_set "$PRE_PUSH_LEDGER_JSON"
+)"
+test "$REMOTE_TAIL" = "$EXPECTED_REMOTE_TAIL"
+test "$PENDING_TAILS" = "$POLICY_MIGRATION_TAIL"
+
+POLICY_DRY_RUN="$(npx --no-install supabase db push --dry-run 2>&1)"
+DRY_RUN_MIGRATIONS="$(
+  printf '%s\n' "$POLICY_DRY_RUN" |
+    grep -Eo '[0-9]{14}_[A-Za-z0-9_]+\.sql' |
+    sort -u
+)"
+test "$DRY_RUN_MIGRATIONS" = "$POLICY_MIGRATION_FILENAME"
+
+# Re-read the linked ledger at the action boundary. Any concurrent or
+# unexpected local/remote migration stops this procedure before confirmation.
+ACTION_LEDGER_JSON="$(
+  npx --no-install supabase --output-format json migration list --linked
+)"
+IFS=$'\t' read -r REMOTE_TAIL PENDING_TAILS <<< "$(
+  policy_pending_set "$ACTION_LEDGER_JSON"
+)"
+test "$REMOTE_TAIL" = "$EXPECTED_REMOTE_TAIL"
+test "$PENDING_TAILS" = "$POLICY_MIGRATION_TAIL"
 printf '%s\n' \
-  "STOP: review the linked ledger and dry-run above." \
-  "Type apply-$EXPAND_MIGRATION_TAIL only if every pending migration is reviewed."
+  "Validated exact pending migration: $POLICY_MIGRATION_FILENAME" \
+  "Type apply-$POLICY_MIGRATION_TAIL to authorize only this hosted mutation."
 read -r MIGRATION_APPROVAL
-test "$MIGRATION_APPROVAL" = "apply-$EXPAND_MIGRATION_TAIL"
+test "$MIGRATION_APPROVAL" = "apply-$POLICY_MIGRATION_TAIL"
 npx --no-install supabase db push
 LEDGER_JSON="$(
   npx --no-install supabase --output-format json migration list --linked
 )"
 LEDGER_JSON="$LEDGER_JSON" \
-EXPECTED_MIGRATION_TAIL="$EXPAND_MIGRATION_TAIL" \
+EXPECTED_MIGRATION_TAIL="$POLICY_MIGRATION_TAIL" \
   node scripts/verify-migration-parity.mjs
 git status --short
 test -z "$(git status --porcelain=v1 --untracked-files=all)"
@@ -195,7 +276,7 @@ npx --yes vercel@56.3.2 inspect <PRODUCTION_DEPLOYMENT_URL>
 npx --yes vercel@56.3.2 logs <PRODUCTION_DEPLOYMENT_URL>
 ```
 
-Every status check must be empty, every full-SHA comparison must be identical, and every divergence count must be exactly `0 0`. The remote checks before and after the database gate catch `origin/main` moving during either phase; if it moved, stop and restart from the new reviewed commit instead of deploying the stale application. `migration list` and `db push --dry-run` are review evidence, not authorization to mutate the hosted schema. Stop on an unexpected remote-only migration, a gap, an unreviewed pending migration, or any dry-run error. The typed confirmation authorizes only the reviewed expand push through `20260719140000`; after the push, `scripts/verify-migration-parity.mjs` consumes the captured `LEDGER_JSON` and must prove exact local/remote parity before Vercel is contacted. If the push or parity check fails, the still-live direct-DML application remains compatible; contain the release and use a new forward migration for correction. Never edit or delete an applied migration. Record the identical full Git SHA as the release SHA before the pinned Vercel production command and compare it with deployment metadata after the build. Review logs only for status and safe error codes/configuration names. Never paste a log containing a credential, request body, source evidence, human response, provider payload, authorization header, or cookie.
+Every status check must be empty, every full-SHA comparison must be identical, and every divergence count must be exactly `0 0`. The remote checks before and after the database gate catch `origin/main` moving during either phase; if it moved, stop and restart from the new reviewed commit instead of deploying the stale application. The private linked-target comparison must succeed without printing either project reference. Both ledger checks must prove remote tail `20260720190000` and the one-element pending set `20260721100000`; the dry run must name only `20260721100000_add_analysis_access_policy.sql`. Stop on an unexpected remote-only migration, a gap, any other local pending migration, a malformed ledger, a changed target, or any dry-run error. Inventory and dry-run evidence are not authorization: only the fresh action-time text `apply-20260721100000` authorizes that exact policy migration. After the push, `scripts/verify-migration-parity.mjs` must prove exact local/remote parity through `20260721100000` before Vercel is contacted. If the push or parity check fails, keep analysis disabled, contain the release, and use a new reviewed forward migration for correction. Never edit or delete an applied migration. Record the identical full Git SHA as the release SHA before the pinned Vercel production command and compare it with deployment metadata after the build. Review logs only for status and safe error codes/configuration names. Never paste a log containing a credential, request body, source evidence, human response, provider payload, authorization header, or cookie.
 
 The project explicitly enables Fluid Compute in `vercel.json`. The analysis route sets a conservative 90-second function duration, below the currently supported 300-second Hobby Fluid maximum; 90 seconds is the application's release budget, not the plan maximum. Its two sequential OpenAI calls each have a 30-second internal limit with SDK/request retries disabled, leaving about 30 seconds for authorization, graph work, persistence, and safe failure handling. The database assigns a fixed three-minute claim lease, providing a second full route-runtime margin. Active duplicate responses expose the remaining bounded delay; resubmitting the exact update after expiry terminalizes the existing claim without another provider call. A late success is rejected transactionally. Other mutation/history routes use a 30-second duration. A deployment-time function limit is not permission to wait indefinitely or add background work. OpenAI must never be contacted during `npm run build` or the Vercel build phase.
 
@@ -241,6 +322,8 @@ On the merged contract commit, repeat the clean Node 22/local Supabase gate, lin
 ## Rollback
 
 Contain a bad release before investigating it. For a pure application/runtime/config regression, return the production alias to the last known-good Vercel deployment:
+
+**Hard precondition:** do not run `vercel rollback`, assign an alias, or otherwise serve an old deployment until credential-first containment is complete. Start the seven-step analysis containment sequence above; revoke every OpenAI recording key and Gateway key that could authorize this deployment, remove `OPENAI_API_KEY` and `AI_GATEWAY_API_KEY` from every Vercel scope where present, and privately verify both provider-side invalidation and name-only Vercel absence without displaying a value. If either credential can still work or its removal cannot be proved, keep the current route contained and do not change the production alias.
 
 ```bash
 npx --yes vercel@56.3.2 ls
@@ -367,7 +450,7 @@ test -z "$(git status --porcelain=v1 --untracked-files=all)"
 git push -u origin HEAD
 ```
 
-Open and review a PR, merge it without force, then return to `main`, pull with `--ff-only`, prove `HEAD == origin/main` with the SHA/divergence guard, rerun the complete gate, and run `npx --yes vercel@56.3.2 --prod`. Do not bypass review for a non-containment repair, do not force-push, and do not delete or edit an applied migration. The provider-model metadata validator intentionally accepts both the prior artifact's exact legacy envelope and the current exact envelope during the rollback window; new writes still persist the provider-returned model name. Rotate a key only in the provider and Vercel secret stores if exposure is suspected; never put the replacement in Git or a command argument.
+Open and review a PR, merge it without force, then return to `main`, pull with `--ff-only`, prove `HEAD == origin/main` with the SHA/divergence guard, rerun the complete gate, and run `npx --yes vercel@56.3.2 --prod`. Do not bypass review for a non-containment repair, do not force-push, and do not delete or edit an applied migration. The provider-model metadata validator intentionally accepts both the prior artifact's exact legacy envelope and the current exact envelope during the rollback window; new writes still persist the provider-returned model name. Credential invalidation and removal are mandatory before any old artifact or alias can be served, regardless of whether exposure is suspected. Add a replacement only after the reviewed current artifact, mode, quota, grant, and containment gates are ready; never put a key in Git or a command argument.
 
 ## Evidence that remains human-owned
 
