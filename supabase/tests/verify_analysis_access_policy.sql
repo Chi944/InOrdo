@@ -1324,9 +1324,18 @@ reset role;
 -- Server-only wrappers authenticate as service_role, then narrow to the real
 -- viewer fixture before executing their internal authorization checks.
 set local role service_role;
+select pg_catalog.set_config('request.jwt.claim.sub', '', true);
 select pg_catalog.set_config(
   'request.jwt.claims', '{"role":"service_role"}', true
 );
+do $$
+begin
+  if (select auth.role()) is distinct from 'service_role'
+     or (select auth.uid()) is not null then
+    raise exception 'viewer wrapper fixture inherited an Auth subject';
+  end if;
+end;
+$$;
 do $$
 declare
   baseline constant jsonb := pg_catalog.current_setting(
