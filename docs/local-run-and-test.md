@@ -11,7 +11,7 @@ This guide gives Deston on Windows and Andres on macOS repeatable, role-appropri
 - Until `OPENAI_API_KEY` is intentionally added, `/api/health` must return generic `503 not_ready`; this is expected and live analysis must remain unclaimed.
 - Use only the fictional Regional Climate Action Summit workspace and the operator-provisioned demo Auth account.
 
-Deston's privileged local fail-closed setup uses these six non-OpenAI names: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_MODEL`, `DEMO_PROJECT_SLUG`, and `DEMO_RESET_SECRET`. Leave `OPENAI_API_KEY` blank. Andres should prefer the deployed production application for authenticated interface QA. When local Auth/UI inspection is necessary, he needs only the two browser-safe `NEXT_PUBLIC_` values, the non-secret server-only `DEMO_PROJECT_SLUG=regional-climate-action-summit-2026`, and his own operator-provisioned demo account. Every credential and privileged server value remains blank.
+Deston's privileged local fail-closed setup uses these six non-OpenAI names: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_MODEL`, `DEMO_PROJECT_SLUG`, and `DEMO_RESET_SECRET`. Leave `OPENAI_API_KEY` blank. Andres should prefer the deployed production application for authenticated interface QA. When local Auth/UI inspection is necessary, he needs only the two browser-safe `NEXT_PUBLIC_` values, the non-secret server-only `DEMO_PROJECT_SLUG=regional-climate-action-summit-2026`, the non-secret `OPENAI_MODEL=gpt-5.6-luna` default retained from `.env.example`, and his own operator-provisioned demo account. Every credential and privileged server value remains blank.
 
 A Vercel CLI-managed `VERCEL_OIDC_TOKEN`, if present, is also a secret: do not inspect, copy, document, or commit it. If Andres is later assigned a specific privileged local operation, the project owner must approve the narrow access and deliver each required server value through the approved secret manager; never grant the full secret set merely for environment parity.
 
@@ -36,7 +36,7 @@ git pull --ff-only origin main
 npm ci
 ```
 
-Link the checkout to the existing Vercel project and confirm the Production variable **names and scopes**. Production entries are sensitive and cannot be recovered by `vercel env pull`, so do not treat that command as secret distribution:
+Link the checkout to the existing Vercel project and confirm the Production variable **names and scopes**. Public configuration and sensitive credentials have different visibility rules; do not use `vercel env pull` as a teammate secret-distribution mechanism or assume every Production value is recoverable:
 
 ```powershell
 npx vercel login
@@ -82,7 +82,7 @@ git check-ignore -q .env.local
 git status --short
 ```
 
-Populate `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `DEMO_PROJECT_SLUG=regional-climate-action-summit-2026`. The slug identifies the checked-in synthetic project; it is server-only but not a credential. Leave `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, `OPENAI_MODEL`, and `DEMO_RESET_SECRET` blank. Do not send Andres Deston's `.env.local`, service-role/reset values, or OpenAI credential, and do not temporarily demote Production secrets into Preview or Development merely to make them pullable.
+Populate `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `DEMO_PROJECT_SLUG=regional-climate-action-summit-2026`. Retain `OPENAI_MODEL=gpt-5.6-luna` from `.env.example`; it is non-secret and is not used by the protected read-only workspace path. The slug identifies the checked-in synthetic project; it is server-only but not a credential. Leave `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, and `DEMO_RESET_SECRET` blank. Do not create an explicit empty `OPENAI_MODEL=` entry because the environment contract rejects blank values. Do not send Andres Deston's `.env.local`, service-role/reset values, or OpenAI credential, and do not temporarily demote Production secrets into Preview or Development merely to make them pullable.
 
 ## Confirm the hosted Supabase link
 

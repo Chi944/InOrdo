@@ -216,7 +216,7 @@ DEMO_RESET_SECRET=
 | `SUPABASE_SERVICE_ROLE_KEY` | Server only | Narrow analysis/operation persistence capabilities after user authorization. |
 | `OPENAI_API_KEY` | Server only | OpenAI Responses API authentication. |
 | `OPENAI_MODEL` | Server only | Configured GPT-5.6 deployment model. |
-| `DEMO_PROJECT_SLUG` | Server only | Names the one synthetic project eligible for reset. |
+| `DEMO_PROJECT_SLUG` | Server only | Selects the checked-in synthetic project for protected workspace lookup and reset. |
 | `DEMO_RESET_SECRET` | Server only | Server-held reset guard; never sent by the browser. |
 
 ## Supabase migrations and seed

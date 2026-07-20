@@ -265,6 +265,7 @@ Linked evidence on 2026-07-18: the migration ledger is aligned through `20260718
 - [x] A real two-session local race proved a generation-1 mutation waited behind the project lock, rejected with `40001` after generation advanced to 2, and created zero stale items and zero ledger receipts.
 - [x] Node 22.23.1/npm 10.9.8 clean install, lint, typecheck, 394 unit tests across 57 files, guarded Chromium journey, production build, zero-vulnerability production audit, generated-type comparison, local migration-parity guard, and diff check passed on the settled branch.
 - [x] Prompt 10 review found and corrected two release-documentation defects: optional local Auth/UI now configures the required non-secret project slug without sharing credentials, and the production sequence now blocks Vercel deployment until a reviewed linked migration push is exactly aligned through `20260719140000`.
+- [x] Configuration-contract review corrected the protected-workspace role of `DEMO_PROJECT_SLUG`, retained the non-secret model default for least-privilege local QA, and explicitly rejects an empty `OPENAI_MODEL=` entry.
 - [x] Two P2 scale limits are disclosed with mitigations and backlog owners: analysis finalization's cross-project table-lock scope and the dependency-management UI's silent 500-row cap.
 - [ ] Hosted migration and authenticated browser verification remain pending until the reviewed branch is merged and the operator explicitly opens the release gate.
 

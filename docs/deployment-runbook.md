@@ -27,7 +27,7 @@ Configure values interactively in Vercel's secret store. The commands below cont
 | `SUPABASE_SERVICE_ROLE_KEY` | Production, sensitive | Server only | Used only after request-scoped authorization by constrained persistence/operation services. |
 | `OPENAI_API_KEY` | Production, sensitive | Server only | Required for live analysis; intentionally absent until Deston supplies it. |
 | `OPENAI_MODEL` | Production | Server only | Use `gpt-5.6-luna` unless a reviewed release explicitly changes it. |
-| `DEMO_PROJECT_SLUG` | Production | Server only | Names the one synthetic project eligible for reset. |
+| `DEMO_PROJECT_SLUG` | Production | Server only | Selects the synthetic project for protected workspace lookup and reset. |
 | `DEMO_RESET_SECRET` | Production, sensitive | Server only | Server-held reset guard; never accepted from a browser request. |
 
 Do not point a Preview deployment at the production Supabase database or production reset secret. By default, leave the seven application variables out of Preview. A public Preview can still be inspected, while `/api/health` honestly returns `503 not_ready` and authenticated/live-analysis paths remain unavailable. Configure Preview variables only if the team provisions a separate disposable Supabase project, separate demo reset guard, and explicitly accepts any model spend.
