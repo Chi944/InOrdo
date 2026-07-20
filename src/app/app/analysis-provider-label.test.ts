@@ -11,6 +11,18 @@ describe("analysisProviderLabel", () => {
     expect(analysisProviderLabel(model)).toBe(label);
   });
 
+  it.each([
+    "gpt-5.6-luna-preview",
+    "gpt-5.6-luna-2026-02-31",
+    "GPT-5.6-luna",
+    "gpt-5.6-LUNA",
+    "openai/gpt-oss-20b-preview",
+    "OpenAI/gpt-oss-20b",
+    "openai/GPT-OSS-20b",
+  ])("does not attribute a non-allowlisted known-family variant", (model) => {
+    expect(analysisProviderLabel(model)).toBe("Recorded model");
+  });
+
   it("shows a bounded safe persisted model identifier", () => {
     expect(analysisProviderLabel("provider/model-safe")).toBe(
       "Recorded model · provider/model-safe",
