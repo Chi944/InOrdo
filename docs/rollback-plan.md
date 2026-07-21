@@ -10,11 +10,11 @@
 
 ## Current disabled-mode containment baseline — 2026-07-21
 
-- The current release source is reviewed `main` SHA `4f54cc1eec37d49aa6b1da6e0dafbc6f7d738d03`. Production deployment `dpl_EygrifPbthqu1sdbrUDNog4deNXf` is `READY` at the canonical host and was created by direct CLI deployment from a clean exact-SHA worktree. Vercel did not expose a Git SHA for that direct deployment; the source proof is the operator-side worktree gate.
+- The current release source is reviewed `main` SHA `4f54cc1eec37d49aa6b1da6e0dafbc6f7d738d03`. Post-recording Production deployment `dpl_BW4kvr2zMUNkwv46XEeMMFRJeisJ` is `READY` at the canonical host with analysis disabled and was created by direct CLI deployment from a clean exact-SHA worktree. Vercel did not expose a Git SHA for that direct deployment; the source proof is the operator-side worktree gate. Deployment `dpl_EygrifPbthqu1sdbrUDNog4deNXf` is historical and must not be treated as the current rollback baseline.
 - Migration `20260721100000_add_analysis_access_policy.sql`, SHA-256 `0F4125F0897FE96A942889EF57C8A4CC186F730539597149EB98CABEA4939B1F`, is applied. Post-apply parity is exact through `20260721100000`, the pending set is empty, and linked database lint passed. Never delete or edit this migration; correct it only with a new reviewed forward migration.
-- The owner attested that every pre-existing InOrdo/shared OpenAI key was revoked and the local OpenAI key was removed. Names-only Vercel checks found no OpenAI key in Production, Preview, or Development and no Gateway key in Production. Production analysis mode is disabled.
+- Before recording, an older duplicate active InOrdo provider key was discovered and revoked. After the single successful capture, the fresh recording key was revoked, zero active InOrdo keys remained, the Vercel `OPENAI_API_KEY` was removed, and local `.env.recording.local` was deleted. Production analysis mode is disabled.
 - Historical deployments were reachable during containment checking but cannot spend the revoked provider key. The three oldest checked health endpoints returned `503`. Do not restore a historical alias merely because its health endpoint responds.
-- Canonical base health and signed-out routing passed. The authenticated disabled-message/no-provider-request smoke is still pending, so this baseline is not evidence that the authenticated policy UX passed.
+- Canonical base health and signed-out routing passed. Authenticated viewer QA confirmed the disabled/read-only policy UX and inaccessible mutation controls; the public deployment cannot start a new paid analysis.
 
 ## Before release
 

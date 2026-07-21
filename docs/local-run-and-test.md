@@ -132,7 +132,7 @@ Open `http://localhost:3000`. In Deston's fully configured environment, verify:
 
 Stop the development server with `Ctrl+C`.
 
-Current Production at [inordo.vercel.app](https://inordo.vercel.app) was deployed directly from a clean worktree at reviewed source SHA `4f54cc1eec37d49aa6b1da6e0dafbc6f7d738d03`. It is in disabled analysis mode with no OpenAI key in any Vercel environment and no Production Gateway key. Public smoke returned health `200 ready`, landing/login `200`, and a signed-out protected-project redirect. A new live analysis is intentionally unavailable; the fresh authenticated disabled-message smoke remains pending.
+Current Production at [inordo.vercel.app](https://inordo.vercel.app) was deployed directly from a clean worktree at reviewed source SHA `4f54cc1eec37d49aa6b1da6e0dafbc6f7d738d03`. It is in disabled analysis mode with no OpenAI key in any Vercel environment and no Production Gateway key. Public smoke returned health `200 ready`, landing/login `200`, and a signed-out protected-project redirect. Fresh isolated judge-viewer QA confirmed session refresh, read access, the disabled analysis message, and disabled or absent mutation controls. A new live analysis is intentionally unavailable.
 
 ## Automated verification
 

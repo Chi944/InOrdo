@@ -10,106 +10,110 @@ Use this as the final human handoff. Check an item only after testing the exact 
 - [x] The repository contains an MIT `LICENSE` file.
 - [x] The repository contains architecture, demo, security, QA, and Codex implementation evidence.
 - [x] The implementation log contains summaries only and no private Codex transcript or fabricated Session ID.
-- [x] The public canonical alias `https://inordo.vercel.app` is assigned to production deployment `dpl_EwTWxyQ4j8F7P4Dk3wrh5whTP9RA` at reviewed `main` SHA `dad6b33e8fe99ae134f6949a4c46e8311352691d`; Preview deployments remain protected.
+- [x] The public canonical alias `https://inordo.vercel.app` is assigned to post-recording production deployment `dpl_BW4kvr2zMUNkwv46XEeMMFRJeisJ`, deployed directly from the clean release worktree at reviewed SHA `4f54cc1eec37d49aa6b1da6e0dafbc6f7d738d03`; its immutable URL is `https://inordo-caheq8v2h-chi944s-projects.vercel.app`. It is `READY`, health is ready with analysis disabled, and Preview deployments remain protected.
 
 ## Required public assets and access
 
 - [x] An unauthenticated GitHub API/raw-file check confirmed `https://github.com/Chi944/InOrdo-Hackathon` is public and defaults to `main`; the current deployed application SHA is recorded separately below.
 - [x] The public MIT license and README return `200`; the full-repository release review plus a current/all-history credential-format scan found no secret, unexpected tracked environment file, private data, or private transcript.
-- [x] Production is public while Preview remains protected. Signed-out checks returned `200` for `/` and `/login`, `ready` for `/api/health`, and `307` from `/app` to `/login?next=%2Fapp`; the immutable Production URL is public and a real Preview URL still returns Vercel SSO.
+- [x] Production is public while Preview remains protected. The current canonical and immutable hosts are reachable, and `/api/health` reports ready with analysis disabled. Older deployment evidence is historical.
 - [ ] Confirm the README renders correctly on the public repository, including Mermaid, screenshots/GIFs, setup instructions, known limitations, and links.
 - [x] Confirm the checked-in landing and workflow-principle screenshots come from the real public route, include descriptive alt text, and make no authenticated or live-model claim.
-- [ ] Capture a final protected-workspace screenshot or short GIF after the funded analysis-to-undo QA; label synthetic data and do not present the failed provider attempt or a fixture as live GPT-5.6 output.
-- [ ] Confirm the synthetic sample path and operator-managed demo/test-account instructions at `<DEMO_ACCESS_INSTRUCTIONS_OR_TEST_PATH>` work without committing a password.
+- [x] The final video includes genuine protected-workspace views from the funded analysis-to-undo QA, labels the synthetic workspace, and never presents a fixture or failed attempt as live GPT-5.6 output.
+- [x] The judge-only viewer credential and testing instructions are saved privately in Devpost; judge QA confirmed saved-state view access and denied or disabled provider and mutation controls without committing a password.
 - [ ] Confirm `<PUBLIC_YOUTUBE_VIDEO_URL>` is publicly viewable, has voiceover, matches the submitted build, and runs no longer than 3:00.
-- [ ] Confirm `<DEVPOST_URL>` is public after submission and every linked asset opens without team credentials.
+- [x] Confirm the public Devpost project URL `https://devpost.com/software/chimera-i4oz8d` opens without a team session. Recheck its hackathon-submission state after finalization.
 
 ## Product and claim review
 
-- [ ] README and Devpost use the one-line pitch consistently and identify the Work & Productivity track.
-- [ ] The demo follows evidence → impact → proposal → approval → history and undo, or clearly stops at the last independently verified step.
-- [ ] The GPT-5.6 explanation is specific: server-side structured extraction and recovery drafting, strict validation, no tools, and no direct mutation authority.
-- [ ] The deterministic explanation is specific: explicit dependency traversal, authorization, approval checks, mutations, operation history, and undo remain application/database logic.
-- [ ] The Codex explanation names concrete work packages and decisions instead of making a generic “AI helped us code” claim.
-- [ ] The video never presents a fixture, test double, prerecorded mock, or expected result as a live model response.
+- [x] README and Devpost use the same evidence-backed, human-approved recovery framing and identify the Work & Productivity track.
+- [x] The verified Production demo captured evidence → direct and indirect impact → recovery proposal → explicit human approval → successful apply → linked history and compensating undo.
+- [x] The GPT-5.6 explanation is specific: server-side structured extraction and recovery drafting, strict validation, no tools, and no direct mutation authority.
+- [x] The deterministic explanation is specific: explicit dependency traversal, authorization, approval checks, mutations, operation history, and undo remain application/database logic.
+- [x] The Codex explanation names concrete work packages and decisions instead of making a generic “AI helped us code” claim.
+- [x] The video never presents a fixture, test double, prerecorded mock, or expected result as a live model response.
 - [x] The proposal-readiness mismatch is resolved by the invariant-checked server-owned transition and its linked reconciliation; non-ready states still fail closed.
-- [ ] Known limitations include the unverified live model/browser/deployment gates that remain open at submission time.
+- [x] Known limitations and final copy distinguish the verified saved GPT-5.6 result from disabled new paid analysis, separate live from automated accessibility evidence, and retain only the public-video, feedback, rights, final-commit, and submission gates.
 
 ## Production video package
 
-- [x] The authoritative storyboard is exactly 2:47 and assigns Andres sections A1–A5 and Deston sections D1–D4.
+- [x] The original storyboard targeted 2:47 and assigned Andres sections A1–A5 and Deston sections D1–D4; the natural-speed verified-success export runs 2:44.067.
 - [x] Separate recording masters specify mono PCM WAV at 48 kHz/24-bit, no clipping, approximately two seconds between sections, approximately five seconds of room tone, and external-only media paths.
 - [x] The capture runbook requires genuine public Production behavior at 1920×1080, 100% browser zoom, full-screen browser, disabled notifications, a visible synthetic label, and a privacy frame check before every take.
 - [x] The video package states that GPT-5.6 performs bounded server-only extraction/drafting, deterministic TypeScript owns dependency reach, and model output never directly mutates project records.
 - [x] The package defines mutually exclusive verified-success and no-retry branches selected only after the single attempt is classified and paid credentials are revoked; D1, captures 03–05, editorial labels, and thumbnail badge cannot be mixed.
 - [x] The no-retry branch uses the exact approved replacement D1, genuine Production fail-closed/preserved synthetic states from 0:54–2:28, and labels each preserved state as not a new paid result.
 - [x] The no-retry thumbnail replaces the success badge exactly with `Bounded AI contract + deterministic dependency graph` and cannot use the verified-success crop.
-- [ ] Record and time Deston's exact 29-word D4 pickup before the Production session; require intelligible delivery within 10 seconds without rushing, or block recording for specification-owner resolution without silently editing text or timing.
-- [ ] Record the seven named Production captures in `C:\Users\User\Videos\InOrdo-Build-Week\01-screen-captures`; never commit raw captures, voice files, browser profiles, edit projects, credentials, or private notes.
-- [ ] Verify the single authorized GPT-5.6 raw capture is playable, then immediately revoke the purpose-specific OpenAI key, remove it from Vercel Production, and redeploy in the approved safe mode.
-- [ ] If the one provider attempt does not yield a verified result, do not retry without explicit authorization; select the truthful no-verified-result copy and do not imply a live success in the video or thumbnail.
-- [ ] After attempt classification and credential revocation, record which mutually exclusive editorial branch is selected and verify its D1, captures 03–05, labels, thumbnail badge, judge sentence, and public copy all agree.
-- [ ] Receive `Andres.wav`, `Andres-room-tone.wav`, `Deston.wav`, and `Deston-room-tone.wav` at the documented external paths and verify format, clipping, intelligibility, and section order.
-- [ ] Assemble accurate captions, restrained cursor movement, readable holds on evidence/path/approval/history, and a final frame-by-frame privacy review.
-- [ ] Export and inspect the exactly 2:47 1920×1080 final video; verify it contains no test route, generated interface, private transcript, environment output, account detail, credential, or customer data.
-- [ ] Export `C:\Users\User\Videos\InOrdo-Build-Week\05-exports\final\inordo-thumbnail-1280x720.png` at exactly 1280×720 from a genuine Production frame with the approved title, subtitle, badge, synthetic label, and privacy constraints.
-- [ ] Confirm the recording key is revoked and the safe post-recording Production deployment is live before uploading or sharing any video.
+- [x] The final edit includes a brief visual team introduction using the supplied photos. Raw photos and all production media remain outside Git.
+- [ ] Before public upload, Deston and Andres confirm they own or are authorized to use their supplied photos and each consents to the photo's use in the submission video and thumbnail.
+- [x] Deston's supplied D4 runs naturally for 12.229 seconds. The final edit widens its picture slot, tightens only non-spoken holds, captions audible wording, and uses no time-stretch or synthesis; the full runtime remains 2:44.067.
+- [x] Genuine Production screenshots and the verified playable GPT-5.6 raw clip are retained under `C:\Users\User\Videos\InOrdo-Build-Week\01-screen-captures`; no raw capture, voice file, browser profile, edit project, credential, or private note is committed.
+- [x] The single authorized GPT-5.6 raw capture was verified playable; the fresh recording key was revoked, the older duplicate key was also revoked, zero active InOrdo keys remained, the Vercel key was removed, local `.env.recording.local` was deleted, and Production was redeployed disabled.
+- [x] Exactly one 14-minute grant authorized exactly one successful GPT-5.6 Production run; post-capture verification found one claimed, consistent, expiry-valid grant, and no retry was made.
+- [x] The verified-success editorial branch is selected from genuine Production evidence; the no-retry branch remains an unused contingency.
+- [x] The final render's D1, Production result/impact/apply/undo views, labels, thumbnail badge, judge sentence, and public copy agree with the verified-success branch.
+- [x] Both supplied human recordings were normalized to mono PCM WAV at 48 kHz/24-bit; section order, clipping headroom, and natural timing were verified. The edit contains no synthetic or time-stretched voice.
+- [x] The 2:44.067 render uses accurate captions, restrained motion, and readable holds on evidence, path, approval, and history. Representative and cut-adjacent frames passed privacy review.
+- [x] The 1920×1080, 30 fps H.264/AAC review export contains no test route, generated interface, private transcript, environment output, account identifier, credential, or customer data. It measures -15.1 LUFS integrated with -1.1 dBFS true peak and has no black segment or silence longer than two seconds.
+- [x] `C:\Users\User\Videos\InOrdo-Build-Week\05-exports\final\inordo-thumbnail-1280x720.png` is exactly 1280×720, visually reviewed, and uploaded successfully to the Devpost project.
+- [x] Confirmed the recording key is revoked, zero active InOrdo keys remain, and safe post-recording disabled deployment `dpl_BW4kvr2zMUNkwv46XEeMMFRJeisJ` is live before uploading or sharing any video.
 
 ## README and local reproduction
 
-- [ ] Prerequisites match `package.json` and the repository toolchain, including Node 22 and npm.
-- [ ] Environment documentation lists names only; browser-safe and server-only variables are distinguished and no value is committed.
-- [ ] Supabase migration, seed, generated-type, and demo-user steps match the checked-in files and do not imply that the seed creates credentials.
-- [ ] `npm ci`, local development, production build, and test commands have been followed from a clean checkout.
-- [ ] Repository structure and actual routes match the final tree.
+- [x] Prerequisites match `package.json` and the repository toolchain, including Node 22 and npm.
+- [x] Environment documentation lists names only; browser-safe and server-only variables are distinguished and no value is committed.
+- [x] Supabase migration, seed, generated-type, and demo-user steps match the checked-in files and do not imply that the seed creates credentials.
+- [x] Clean release-worktree `npm ci` evidence is recorded; final lint, typecheck, 514 tests, two Playwright journeys, build, audit, and diff gates pass.
+- [x] Repository structure and actual routes match the final tree and Next.js build route inventory.
 - [x] Deployment instructions name the confirmed manual Vercel Hobby project `chi944s-projects/inordo` and no alternate hosting path.
 
 ## Final QA gate
 
 - [x] All current-branch commands in `docs/qa-checklist.md` are checked with results from the final worktree.
-- [ ] A real owner/admin account completes the authenticated manual checks that are possible in the final build.
+- [x] The real admin recording operator completed the bounded Production analysis, explicit human response, selected internal date apply, linked history, and compensating undo; the separate real owner issued the one-use grant.
 - [x] Authenticated local responsive checks pass at 375, 768, and 1440 pixels with no horizontal overflow.
-- [ ] Keyboard, focus, headings, landmarks, labels, status text, error announcements, and reduced-motion behavior are verified on the exact deployed production route.
-- [ ] A private/incognito production pass covers landing, login, protected route, source intake, the last working analysis step, safe approval gating, history visibility, logout, and refresh behavior.
-- [ ] Exactly one funded synthetic live GPT-5.6 analysis is verified with safe metadata only, or all public copy states that a live model call was not verified.
-- [ ] Public repository, production, video, and Devpost links are tested from a browser with no team session.
+- [x] Exact Production passed fresh isolated responsive, landmark/heading, keyboard-focus, reduced-motion, session, and viewer-control checks; status/error announcements, dialog focus return, accessible labels, and non-color meaning retain automated component/Playwright evidence.
+- [x] A fresh isolated no-cookie Production pass covered signed-out redirect, judge login/session refresh, saved source/result/history visibility, safe viewer gating, and closure; the existing authenticated pass separately verified logout and safe invalid-password feedback.
+- [x] Exactly one funded synthetic live GPT-5.6 Production analysis is verified with safe, non-secret evidence only; public copy states that its saved result remains viewable while new paid analysis is disabled.
+- [x] Public repository, Production, and Devpost project links are tested without a team session. The public YouTube link remains separately pending until upload.
 
 ## Codex submission evidence
 
 - [ ] Run `/feedback` from the primary Codex task used for the submission evidence.
 - [ ] Paste only the returned identifier into `<PRIMARY_FEEDBACK_SESSION_ID>` in README, submission copy, and `docs/codex-log.md`.
-- [ ] Confirm no private transcript, prompt history, secret, or unrelated Session ID is committed.
-- [ ] Confirm the submitted Codex explanation names the relevant work packages: repository/architecture foundation, secure data and operation boundaries, deterministic graph work, impact-review UX, tests/QA, and submission documentation.
+- [x] Diff/history scans and review confirm no private transcript, prompt history, secret, or unrelated Session ID is committed.
+- [x] The submitted Codex explanation names repository/architecture foundation, secure data and operation boundaries, deterministic graph work, impact-review UX, tests/QA, and submission documentation.
 
 ## Team, deadline, and final lock
 
-- [ ] Replace `<TEAM_MEMBER_NAMES_AND_ROLES>` with the exact public team-member names and roles approved by the team.
+- [x] Andres is confirmed as a Devpost team member.
+- [x] Public team copy is Deston — Engineering, Data & AI Safety; Andres — Product Design & Experience. Andres is a confirmed Devpost team member.
 - [x] Confirmed from the [official Devpost schedule](https://openai.devpost.com/details/dates): submissions close July 21, 2026 at 5:00 PM PDT (July 22, 2026 at 8:00 AM SGT).
 - [ ] After the final repository commit exists, record its SHA in the external submission notes and make Devpost reference it. Separately confirm production still identifies the recorded application release SHA; do not create a circular self-referential commit merely to embed either SHA.
 - [ ] Submit before the official deadline.
-- [ ] After the deadline, make **no edits** to the submitted repository branch/commit, production artifact, Devpost entry, or public video unless the event rules explicitly permit them.
+**Post-deadline rule:** make no edits to the submitted repository branch/commit, production artifact, Devpost entry, or public video unless the event rules explicitly permit them.
 
 ## Placeholder inventory
 
-Replace every remaining submission token below before publishing. Search with `rg -n '<(DEVPOST_URL|PUBLIC_YOUTUBE_VIDEO_URL|DEMO_ACCESS_INSTRUCTIONS_OR_TEST_PATH|PRIMARY_FEEDBACK_SESSION_ID|TEAM_MEMBER_NAMES_AND_ROLES)>' README.md docs` and resolve every result intentionally.
+Replace every remaining submission token below before publishing. Search with `rg -n '<(PUBLIC_YOUTUBE_VIDEO_URL|PRIMARY_FEEDBACK_SESSION_ID)>' README.md docs` and resolve every result intentionally.
 
 | Placeholder | Human-supplied value | Verification |
 | --- | --- | --- |
 | Public repository | `https://github.com/Chi944/InOrdo-Hackathon` | Open signed out and confirm the final intended commit and README are visible. |
 | Production application | `https://inordo.vercel.app` | Open incognito and run the production checklist. |
 | Hosting platform/project | Manual Vercel Hobby project `chi944s-projects/inordo` | Confirm the project remains manually deployed with no Git-connected automatic deployment. |
-| Deployed application SHA | `dad6b33e8fe99ae134f6949a4c46e8311352691d` | Compare the deployment metadata and final submission reference. |
-| `<DEVPOST_URL>` | Final public Devpost entry. | Open signed out after submission. |
+| Deployed application SHA | `4f54cc1eec37d49aa6b1da6e0dafbc6f7d738d03` | Compare the clean-worktree release record and final submission reference; the direct Vercel deployment does not expose a Git SHA in metadata. |
+| Public Devpost project | `https://devpost.com/software/chimera-i4oz8d` | Verified signed out; recheck after final hackathon submission. |
 | `<PUBLIC_YOUTUBE_VIDEO_URL>` | Public voiceover video URL, duration at most 3:00. | Play signed out and compare against the final build. |
-| `<DEMO_ACCESS_INSTRUCTIONS_OR_TEST_PATH>` | Judge-safe test path or separately delivered account instructions; never a committed password. | Follow from a private browser with the approved access method. |
+| Judge demo access | Judge-only credentials and instructions are saved privately in Devpost; no password is committed. | Viewer QA confirmed read access and denied/disabled provider and mutation controls. |
 | `<PRIMARY_FEEDBACK_SESSION_ID>` | Identifier returned by the primary `/feedback` command. | Confirm the exact ID; do not attach a private transcript. |
-| `<TEAM_MEMBER_NAMES_AND_ROLES>` | Exact public team-member names and roles. | Cross-check the team’s event registration. |
+| Public team copy | Deston — Engineering, Data & AI Safety; Andres — Product Design & Experience. | Andres is confirmed on the Devpost team; use the same role copy in final media. |
 | Submission deadline | July 21, 2026 at 5:00 PM PDT (July 22, 2026 at 8:00 AM SGT). | Confirmed against the official Devpost schedule. |
 
 Two setup examples are deliberately not submission fields: `<SUPABASE_PROJECT_REF>` in README and `<AUTH_USER_UUID>` in `docs/demo-user-setup.md`. Replace them only in a local command or reviewed dashboard query when configuring an environment. Do not commit a real Auth UUID, credential, or environment value merely to remove an instructional placeholder.
 
 ## Final sign-off
 
-- [ ] Andres — UX, responsive, accessibility, screenshots, and copy review complete.
-- [ ] Deston — database/server contracts, production configuration, model call, readiness invariants, and operation safety review complete.
-- [ ] Shared — public access, end-to-end truth check, video, `/feedback` Session ID, team details, deadline, and no-post-deadline-edit lock complete.
+- [x] Andres-owned UX, responsive/accessibility, screenshots, and copy work is integrated and verified; Andres is confirmed on the Devpost team.
+- [x] Deston-owned database/server contracts, Production configuration, bounded model call, readiness invariants, operation safety, and teardown are verified.
+- [ ] Shared finalization — confirm team media/license rights, upload/verify YouTube, add `/feedback` Session ID, record final commit, approve Devpost submission, and enforce the deadline lock.

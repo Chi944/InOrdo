@@ -1,44 +1,45 @@
 # QA checklist
 
-## 2026-07-21 disabled-mode Production release gate
+## 2026-07-21 verified recording and post-recording disabled-mode Production gate
 
 - [x] Release source `4f54cc1eec37d49aa6b1da6e0dafbc6f7d738d03` passed under Node `22.23.1`/npm `10.9.8`: lint, typecheck, 514 Vitest tests across 64 files, two Playwright Chromium tests, the Next.js `16.2.10` production build, and `npm audit --omit=dev` with zero vulnerabilities.
 - [x] Sanitized linked-target comparison passed without recording a project reference. Exact migration `20260721100000_add_analysis_access_policy.sql` matched SHA-256 `0F4125F0897FE96A942889EF57C8A4CC186F730539597149EB98CABEA4939B1F`; a second dry run and owner approval preceded apply.
 - [x] Post-apply linked migration parity passed through `20260721100000`, no migration remains pending, and linked database lint passed. A nonfatal `pg-delta` catalog-cache warning was followed by the successful dry-run, parity, and lint proofs.
-- [x] The owner attested that all pre-existing InOrdo/shared OpenAI keys were revoked provider-side and the local `OPENAI_API_KEY` entry was removed. Names-only checks found no `OPENAI_API_KEY` in Production, Preview, or Development and no `AI_GATEWAY_API_KEY` in Production.
-- [x] Production `ANALYSIS_MODE` is `disabled`; no current provider key can be spent by the deployment.
-- [x] Direct Vercel CLI deployment from a clean exact-SHA worktree produced `dpl_EygrifPbthqu1sdbrUDNog4deNXf`, `READY`, created 21 July 2026 at 08:59:46 SGT, at [inordo.vercel.app](https://inordo.vercel.app) and the immutable deployment URL. Vercel did not expose a Git SHA for this direct deployment, and no fresh project runtime-setting claim is made.
-- [x] Canonical health returned `200 ready`; landing and login returned `200`; signed-out `/app/projects` returned `307` to login; and the rendered public page contained `WORK & PRODUCTIVITY`.
-- [x] Historical deployment URLs were reachable but cannot spend the owner-attested revoked provider key; the three oldest checked health endpoints returned `503`.
-- [ ] In a fresh authenticated owner/admin session, verify the exact disabled-analysis message and prove that submitting analysis performs no provider request.
-- [ ] Repeat the disabled/read-only path as the judge viewer, complete responsive/keyboard/status-announcement checks, and close the live QA issue only after its remaining acceptance criteria pass.
+- [x] The interim recording deployment reached `READY` with analysis `recording_configured`; canonical-source and fresh-duplicate gates passed, and the operator display was sanitized.
+- [x] Exactly one 14-minute grant was issued. Exactly one GPT-5.6 Production run succeeded; post-capture verification returned one claimed, consistent, expiry-valid grant.
+- [x] Genuine saved evidence, direct and indirect deterministic impact, and the recovery proposal were captured. One internal date action was selected with an explicit human response; apply and compensating undo succeeded, and linked history remains.
+- [x] An older duplicate active InOrdo provider key discovered before the run was revoked. After playable capture, the fresh key was revoked; zero active InOrdo keys remained, the Vercel `OPENAI_API_KEY` was removed, and local `.env.recording.local` was deleted.
+- [x] Production returned to `ANALYSIS_MODE=disabled`. Direct Vercel CLI redeployment from the recorded clean exact-SHA release worktree produced `dpl_BW4kvr2zMUNkwv46XEeMMFRJeisJ`, `READY`, at [inordo.vercel.app](https://inordo.vercel.app) and [inordo-caheq8v2h-chi944s-projects.vercel.app](https://inordo-caheq8v2h-chi944s-projects.vercel.app).
+- [x] Canonical `/api/health` returned `ready` with analysis disabled. Saved verified GPT-5.6 evidence remains viewable, but the deployment cannot start a new paid analysis.
+- [x] Judge-viewer QA confirmed saved-state view access and that provider and mutation controls were denied, disabled, or absent as required.
+- [ ] Complete remaining deployed responsive, keyboard, status-announcement, and final signed-out public-asset checks.
 
 ## 2026-07-21 read-only judge handoff gate
 
-- [x] The credential-safe procedure defines three distinct real Supabase Auth identities: a real `owner` as audited recording-grant issuer, an `admin` recording operator as target actor, and a `viewer` judge.
+- [x] Release verification confirmed exactly one real `owner` grant issuer, one real `admin` recording operator, and one real `viewer` judge as three distinct Auth identities.
 - [x] The procedure requires Dashboard-based creation, `public.profiles` verification before `public.workspace_members`, and no actual email, password, Auth UUID, session, token, or project reference in Git or terminal arguments.
 - [x] The non-secret Devpost body records the complete read-only path: sign in → Projects → synthetic summit → Items → Dependencies → latest impact review/proposal → Operation history → ordinary-project informational preview.
-- [x] The handoff stores exactly two allowlisted recording-outcome variants and marks them mutually exclusive. Final release must replace the instruction line with one truthful variant; a fixture, readiness check, or failed provider request cannot select the success variant.
+- [x] The verified-result recording-outcome variant is selected from the two mutually exclusive allowlisted variants; the verified saved Production result, not a fixture or readiness seam, supports it.
 - [x] Public claims state that input is typed/pasted updates, manual notes, meeting minutes, and meeting summaries; files, CSV, URLs, voice, email, Slack, Teams, Drive, and other connectors are not implemented.
 - [x] Public claims state that ordinary project provisioning is not implemented, the ordinary route is informational, the judge is read-only, Gateway GPT-OSS is capped but not guaranteed free forever, and ChatGPT subscriptions cannot fund external application API calls.
-- [x] Node `22.23.1` and npm `10.9.8` completed lint, typecheck, 513 Vitest tests across 64 files, two guarded Chromium journeys, and the Next.js `16.2.10` production build for the settled handoff documentation.
-- [ ] In the authoritative Supabase Dashboard, verify the real owner's Auth user, matching profile, and `owner` membership. If absent, complete the existing controlled owner bootstrap before any recording grant is issued; never substitute a seeded fictional UUID.
-- [ ] Verify the distinct operator's Auth user, profile, and `admin` membership; verify the distinct judge's Auth user, profile, and `viewer` membership. Do not record any identifier or credential.
-- [ ] In a fresh private browser, sign in as the judge and follow every documented read surface. Confirm analysis, create/edit, dependency add/remove, apply, undo, reset, and delete are unavailable or denied and leave all data/counts unchanged.
-- [ ] Select the truthful recording-outcome variant, enter the judge email/password only in Devpost's private fields, and verify the saved instructions and credential in a signed-out browser.
+- [x] The exact release gate recorded above passed under Node `22.23.1` and npm `10.9.8`: lint, typecheck, 514 Vitest tests across 64 files, two guarded Chromium journeys, the Next.js `16.2.10` production build, and a zero-vulnerability production audit.
+- [x] The real owner's Auth user, matching profile, and `owner` membership were verified before grant issuance; no identifier is recorded.
+- [x] The distinct operator's Auth/profile/`admin` membership and distinct judge's Auth/profile/`viewer` membership were verified; no identifier or credential is recorded.
+- [x] Judge QA followed the documented read surfaces and confirmed view access while analysis and mutation controls were denied, disabled, or absent.
+- [x] The verified-result instructions and judge-only credential were saved privately in Devpost; no credential value is recorded in Git.
 - [ ] After **10 August 2026 00:00 UTC**, disable the judge Auth user, remove only its workspace membership, invalidate or rotate the shared password, verify access is closed, and preserve the profile plus every actor, analysis, operation, and audit reference.
 
-## 2026-07-20 production release execution and follow-up hardening
+## Historical 2026-07-20 production release execution and follow-up hardening
 
 - [x] Existing manual Vercel project is `chi944s-projects/inordo`; project ID and Git remote are unchanged; canonical alias is `https://inordo.vercel.app`; the final leftover `inordo-hackathon.vercel.app` alias was removed.
-- [x] Local and Vercel Production inventories contain all seven required names, including encrypted `OPENAI_API_KEY`; no value was printed, logged, or committed. Exact production deployment `dpl_EwTWxyQ4j8F7P4Dk3wrh5whTP9RA` is `READY`, serves `dad6b33e8fe99ae134f6949a4c46e8311352691d`, and returned health `200 ready`.
+- [x] At this historical checkpoint, local and Vercel Production inventories contained all seven required names, including encrypted `OPENAI_API_KEY`; no value was printed, logged, or committed. The then-current production deployment `dpl_EwTWxyQ4j8F7P4Dk3wrh5whTP9RA` served `dad6b33e8fe99ae134f6949a4c46e8311352691d` and returned health `200 ready`. The current disabled-mode release is recorded above.
 - [x] Hosted Supabase Auth uses Site URL `https://inordo.vercel.app` and redirect `https://inordo.vercel.app/**`, retaining only the approved Preview/local redirects. An operator-managed account is confirmed and mapped as demo admin.
 - [x] Expand migration `20260719140000` is applied and hosted parity is exact through that tail. The deployed artifact passed item create/update, dependency add/remove, exact replay, rollback-only authorization/generation assertions, and reset to 24 active items/26 edges with no temporary residue.
 - [x] One bounded production analysis reached OpenAI and failed closed during extraction with safe `model_unavailable` metadata. The configured OpenAI organization/project has no credits, so there was no retry and no successful proposal/apply/history/undo claim.
 - [x] Deston confirmed on July 20, 2026 that current Vercel Hobby terms permit this hackathon demo; this checklist is operational evidence, not legal advice.
 - [x] Authenticated local layout smoke passed at 375×812, 768×1024, and 1440×1000 with no horizontal overflow. A red/green regression fixes skip-link focus without changing visual design.
 - [x] PR #17 merged; exact approval `apply-20260720190000` authorized only the reviewed contract migration; linked ledger/type parity, dry run, error-level lint, direct-DML denial, four-RPC/replay, member-read, and true-nonmember verification passed after apply.
-- [ ] Fund the OpenAI API organization, then run exactly one synthetic analysis retry and complete proposal selection, apply, ordered history, undo, and reset evidence.
+- [x] This historical funding gap was later resolved by a separate purpose-specific recording window: one bounded Production run succeeded and the current gate above records proposal selection, apply, linked history, undo, and teardown. The failed historical request was not retried.
 - [x] Production is public while Preview remains protected. Anonymous `/`, `/login`, `/api/health`, signed-out `/app`, the immutable Production URL, and a real Preview URL returned the expected `200`/`ready`/`307`/`302` outcomes; the deployed skip link moved focus to `main-content`.
 - [ ] Complete login/session/logout, authenticated announcements and keyboard order, and every final submission link in a fresh profile.
 
@@ -71,7 +72,7 @@
 - [x] On the exact final reconciliation, Node 22.23.1/npm 10.9.8 completed fresh `npm ci`, lint, typecheck, 359 Vitest tests across 55 files, one guarded Chromium journey, the Next.js 16.2.10 production build, and a zero-vulnerability production dependency audit.
 - [x] Final lockfile/ignore/credential-boundary checks found the lockfile byte-identical to `HEAD`, `.env.local` ignored, zero unexpected tracked environment paths, and zero credential-format file matches in the working tree or all 34 reachable commits; no candidate content was printed.
 
-The deployed Prompt 13 artifact remains the recorded production release; this is not evidence that live analysis is operational or that current `main` is serving production. The OpenAI key, operator Auth account, funded model request, authenticated production workflow, production redeploy, and final responsive/accessibility pass remain human-owned.
+At that historical checkpoint, the deployed Prompt 13 artifact remained the recorded release and the funded/authenticated gates were still human-owned. The final release section below records their later completion, the one successful Production run, provider teardown, disabled post-recording deployment, and fresh isolated responsive/viewer QA.
 
 ## Approval reversibility copy repair (`deston/11-approval-reversibility-copy`)
 
@@ -121,7 +122,7 @@ These are local database checks plus the generated database-type update and a fo
 
 ## Prompt 12 production-readiness gate (`deston/08-production-readiness`)
 
-This section records each command or live step individually. Checked items have settled-branch/deployment evidence; unchecked items remain pending. The exact operator commands and evidence limits are in [`docs/deployment-runbook.md`](deployment-runbook.md).
+This section records each command or live step individually. Checked items have settled-branch/deployment evidence. Unchecked items in the active **Build Week submission release checks** section remain pending; earlier branch-specific manual procedures are retained as historical worklists and are not additional submission blockers unless the final section repeats them. The exact operator commands and evidence limits are in [`docs/deployment-runbook.md`](deployment-runbook.md).
 
 - [x] Clean `npm ci` under Node 22 reproduced the lockfile after adding the exact Supabase CLI `2.109.1` development pin.
 - [x] `npm run lint`.
@@ -153,11 +154,11 @@ This section records each command or live step individually. Checked items have 
 - [x] At that historical checkpoint, `OPENAI_API_KEY` was configured and one synthetic request failed closed with `model_unavailable`; no successful live result is claimed. The key is now owner-attested revoked and absent from every Vercel environment.
 - [x] Hosted Supabase Auth uses Site URL `https://inordo.vercel.app` and redirect `https://inordo.vercel.app/**`; approved local HTTP and account-scoped Vercel Preview redirects were retained.
 - [x] Preview deploy proved `HEAD == origin/main == 72a6fc5a02a55ec5efe52e0b14f8ac831ec2685c` and divergence `0 0`; deployment `dpl_ChQL8nigyoc1M6LSEGjdS8seP4bD` is `READY`, target Preview, Node `22.x`, and reports the same `githubCommitSha`/`main` ref. Authenticated Vercel curl reached `/` and `/login` with `200` and expected missing-config health `503`; anonymous requests remain intentionally SSO-protected and therefore are not called a public Preview pass.
-- [x] Production deploy `dpl_EwTWxyQ4j8F7P4Dk3wrh5whTP9RA` proved exact reviewed `main` SHA `dad6b33e8fe99ae134f6949a4c46e8311352691d`, Node `22.x`, `READY`, target `production`, public canonical alias `https://inordo.vercel.app`, and health `200 ready`; Preview still returns Vercel SSO.
-- [ ] In a fresh incognito profile, `/`, `/login`, signed-out `/app`, login/session refresh/logout, and tenant denial behave as documented.
-- [ ] If the final video requires a new live result, issue exactly one purpose-specific key and one-use grant, run one synthetic venue analysis, record only safe model/ID/status metadata, then revoke/remove the key and redeploy disabled mode.
-- [ ] Owner/admin completes the canonical evidence -> deterministic impact -> selective apply -> ordered history -> compensating undo -> protected reset flow; viewer/nonmember/cross-project attempts fail closed.
-- [ ] The exact deployed UI passes full authenticated keyboard, visible-focus, and status-announcement checks. Authenticated local no-overflow checks passed at 375, 768, and 1440 pixels; the public Production skip-link path is separately verified.
+- [x] At that historical checkpoint, production deployment `dpl_EwTWxyQ4j8F7P4Dk3wrh5whTP9RA` proved exact reviewed `main` SHA `dad6b33e8fe99ae134f6949a4c46e8311352691d`, Node `22.x`, `READY`, target `production`, public canonical alias `https://inordo.vercel.app`, and health `200 ready`; Preview still returned Vercel SSO. The current disabled-mode release is recorded at the top of this checklist.
+- [x] A fresh isolated, no-cookie Chromium context verified signed-out `/app` redirect and no workspace disclosure, judge login, session refresh, and closure. The existing authenticated pass separately verified logout and safe invalid-password feedback without exposing credentials or provider details.
+- [x] Exactly one purpose-specific key and one 14-minute one-use grant authorized one successful synthetic venue analysis. Safe result metadata was verified; both InOrdo provider keys were revoked, the Vercel key was removed, and Production was redeployed disabled.
+- [x] Owner/admin completed canonical evidence -> deterministic impact -> selective apply -> ordered history -> compensating undo. Viewer controls for evidence insertion, analysis, apply, undo, and reset were disabled or absent; nonmember and cross-project fail-closed behavior remains covered by application, SQL, and RLS verification.
+- [x] Fresh isolated Production checks covered five authenticated routes at 375, 768, and 1440 pixels (15 route/viewport checks) with no horizontal overflow, valid main/heading structure, keyboard focus, and a reduced-motion context. Automated component and Playwright coverage retains status-announcement, dialog-focus-return, and non-color checks.
 - [x] The previous schema-compatible deployment `dpl_8znxpQsmZsBH7hoqWmLqui4HXtqc` is identified; the Vercel rollback path, mandatory reset/native-mutation containment for any pre-RPC artifact, and migration-preserving Git forward-repair path are reviewed.
 
 ## Prompt 11 submission integration gate (`codex/andres-05-integration`)
@@ -208,11 +209,11 @@ Use an operator-created owner/admin account and only the configured synthetic pr
 6. Undo the eligible operation. Confirm the original history remains and a linked compensating operation appears. Exercise one stale conflict and verify it applies nothing and a subsequent newly reviewed attempt uses a fresh idempotency key.
 7. Open reset review, explicitly confirm, and reset once. Confirm the event date, 24 records, and 26 edges return to baseline, the workflow generation advances exactly once, and archived history remains available. Verify duplicate replay is stable and a distinct immediate reset receives safe rate-limit feedback.
 8. Repeat read-only checks as a viewer and verify apply/undo/reset are unavailable. Test a nonmember/cross-project identifier and confirm it fails closed without tenant details.
-9. Record only date, deployed commit, browser/viewport, route/status outcomes, counts, operation IDs when safe, and pass/fail notes in this checklist. Until that evidence is present, the live smoke remains pending.
+9. Record only date, deployed commit, browser/viewport, route/status outcomes, counts, operation IDs when safe, and pass/fail notes in this checklist. Final non-secret evidence is recorded in the release section below.
 
 ### Integrated known limitations
 
-- [ ] The live authenticated/provider smoke above is pending operator-held deployment configuration.
+- [x] The live authenticated/provider smoke completed once under the bounded recording gate; provider teardown returned Production to disabled analysis mode and the verified saved result remains viewable.
 - [x] The P0 supports one named synthetic project, not general project onboarding.
 - [x] Project/dependency presentation is bounded for the 24-item/26-edge fixture; larger-workspace pagination is deferred.
 - [x] The impact workflow remains a large Client Component; further server/client splitting is a post-P0 performance improvement.
@@ -496,14 +497,14 @@ This subsection preserves the Prompt 7 checkpoint. Prompt 12 supersedes its orig
 
 - [ ] Confirm `https://github.com/Chi944/InOrdo-Hackathon` opens signed out and exposes the final submitted `main` commit, README, screenshots, and MIT license.
 - [x] The canonical production URL opens signed out, and the operator-side release record ties the direct CLI deployment to clean exact source SHA `4f54cc1eec37d49aa6b1da6e0dafbc6f7d738d03`. Vercel did not expose a Git SHA for this direct deployment, so no page/metadata SHA claim is made.
-- [x] The disabled-mode deployment passes strict base readiness with server-only values absent from the browser, logs, screenshots, and repository. Provider-key names are intentionally absent as recorded above.
+- [x] The current post-recording disabled-mode deployment passes strict base readiness. Canonical health is ready with analysis disabled; the fresh recording key and older duplicate key are revoked, zero active InOrdo keys remained, the Vercel recording variable was removed, and local `.env.recording.local` was deleted.
 - [x] Expand `20260719140000`, contract `20260720190000`, and policy `20260721100000` each passed their separate target, pending-set, dry-run, approval, push, and parity gates. The current linked pending set is empty.
 - [x] [Vercel documents a 4.5 MB Function request-body limit](https://vercel.com/docs/functions/limitations); application handlers enforce the tighter 24,000/32,000-byte caps while streaming and cancel over-limit bodies without trusting `Content-Length`.
-- [ ] Run exactly one funded synthetic GPT-5.6 analysis and record safe metadata only; do not record a key, prompt, raw provider output, or source body.
-- [ ] Complete the authenticated production smoke path above as owner/admin and repeat read-only/denial checks as viewer and nonmember where feasible.
-- [ ] Verify the real authenticated route at approximately 375, 768, and 1440 pixels, including keyboard order, visible focus, accessible names, status announcements, and no horizontal overflow.
-- [ ] Confirm Devpost copy and the public voiceover video describe only the verified artifact, use the Work & Productivity track, and never present a fixture as live model output.
-- [ ] Replace the production, demo-access, Devpost, video, team, deadline, and primary `/feedback` placeholders in the submission materials.
+- [x] Exactly one funded synthetic GPT-5.6 Production analysis succeeded under one 14-minute grant; genuine saved evidence, direct/indirect impact, and the recovery proposal were captured without recording a key, private ID, raw provider payload, or source body.
+- [x] The authenticated operator path completed one explicit-human-response internal date apply and compensating undo with linked history; judge-viewer QA confirmed read access and denied/disabled provider and mutation controls. Broader nonmember browser coverage remains separate.
+- [x] A fresh isolated real Production session verified five authenticated routes at 375, 768, and 1440 pixels with no horizontal overflow, valid main/heading structure, keyboard focus, reduced-motion preference, session refresh, and viewer-only control state. Automated coverage retains status-announcement, focus-return, accessible-name, and non-color checks.
+- [x] The 2:44.067 verified-success review export and 1280×720 thumbnail describe only the verified artifact, use the Work & Productivity track, and never present a fixture as live model output. The thumbnail is uploaded to Devpost; the public YouTube URL is pending.
+- [ ] Add the remaining public YouTube URL and primary `/feedback` Session ID. The public Devpost project, team-role copy, Andres membership, and private judge handoff are confirmed.
 - [ ] Test the repository, production, video, Devpost, and demo-access links without a team-authenticated browser session.
 - [ ] Record the final submitted commit externally and stop repository, deployment, Devpost, and video edits at the official deadline.
 
@@ -511,12 +512,12 @@ This subsection preserves the Prompt 7 checkpoint. Prompt 12 supersedes its orig
 
 | Severity | Issue | Owner | Required resolution or honest fallback |
 | --- | --- | --- | --- |
-| High | Production analysis is deliberately disabled and all recorded provider keys are absent or revoked; no successful live GPT-5.6 result is verified. | Deston / Shared | For the video only, authorize one purpose-specific key and exact one-use grant, capture one synthetic result, then revoke/remove the key and redeploy disabled mode. Keep public copy explicit until success is verified. |
-| High | Authenticated native-mutation/reset production smoke is historical, but fresh disabled-message, incognito login/logout, viewer denial, and any authorized analysis-to-undo journey are incomplete. | Shared | Complete the remaining live smoke matrix on the current production URL. There is no documentation-only substitute. |
-| High | Final demo-access, Devpost, and video URLs, team roles, and primary `/feedback` Session ID are not supplied. | Shared | Replace each remaining submission placeholder from its authoritative human/external source and verify every public link before submission. The official deadline is already recorded above. |
+| Resolved | Exactly one bounded GPT-5.6 Production run succeeded; its saved result is viewable, and complete key/environment teardown returned Production to disabled mode. | Deston / Shared | Keep new paid analysis disabled and preserve the verified saved evidence. Any future run requires a new purpose-specific approval. |
+| Resolved | The operator, judge-viewer, signed-out redirect, fresh isolated session, three responsive widths, keyboard focus, reduced-motion preference, and viewer-control boundary are verified. Broader nonmember/cross-project behavior remains covered by application, SQL, RLS, and automated evidence. | Shared | Preserve this boundary and do not initiate another provider call. |
+| High | The verified video file is complete, the public Devpost project/team copy are resolved, and the thumbnail is uploaded; public-upload rights consent, the public YouTube URL, and primary `/feedback` Session ID are not supplied. | Shared | Confirm photo/likeness and temporary-license attribution rights, upload the reviewed MP4, paste the returned URL and exact `/feedback` identifier, verify both signed out, then request explicit final submission approval. |
 | Resolved | Production is public with Preview-only protection; contract migration `20260720190000` and policy migration `20260721100000` passed their recorded hosted parity/lint gates. | Deston / Shared | Preserve Preview protection and rerun the applicable verifiers after future privilege changes. |
 | Medium | Authenticated Playwright does not cover live Supabase/Auth/OpenAI. | Andres / Shared | Use the guarded journey only as UI/contract evidence; complete the real production browser matrix before making live-service claims. |
 
 ## Submission claim rule
 
-Submission language may claim implemented behavior and the scoped automated, linked-database, and guarded-browser verification recorded above. It must describe live GPT-5.6 behavior, authenticated production operation, production responsiveness/accessibility, and final public-asset access as unverified until their checks are completed with current, non-secret evidence.
+Submission language may claim the one verified GPT-5.6 Production result, genuine saved evidence, deterministic direct/indirect impact, recovery proposal, explicit human approval, one internal date apply, linked history, compensating undo, judge-viewer denial, and recorded responsive/focus/reduced-motion checks. It must also say that new paid analysis is disabled and must keep the public YouTube/feedback/final-submission gates unverified until they complete.

@@ -1,6 +1,8 @@
 # InOrdo production video script
 
-**Authoritative runtime:** 2:47 (under the three-minute submission limit)
+**Final review-export runtime:** 2:44.067 (under the three-minute submission limit)
+
+The original approved storyboard targeted 2:47. The final edit follows the natural recorded performances and does not stretch or synthesize either voice. Deston's D4 runs 12.229 seconds instead of the planned 10-second slot; non-spoken visual holds were tightened, so the complete video remains comfortably under three minutes. Captions follow the audible recordings rather than silently restoring an unspoken word.
 
 **Track:** Work & Productivity
 
@@ -17,21 +19,24 @@ The separate speaker masters are [Andres's voiceover](video-production/andres-vo
 - Recovery drafts remain inert. The model output never directly mutates project records; a human chooses an action and the server rechecks authority and state before any supported internal mutation.
 - The workspace and every person, organization, project, and record shown are synthetic.
 
-## Verified-success 2:47 timeline
+**Release status:** The verified-success branch is selected. Exactly one GPT-5.6 Production run succeeded and the playable genuine captures include saved evidence, direct and indirect impact, the recovery proposal, the separate request-human-confirmation proposal left pending, one selected internal date action supplied with the required response, linked apply history, and compensating undo. Provider-key and deployment teardown is complete. The final review export and thumbnail are complete outside Git; the public video URL remains pending.
+
+## Verified-success final timeline
 
 Use this branch only after the single attempt is verified successful, its raw capture is playable, and the recording key is revoked. The successful-branch voiceover below is authoritative and verbatim.
 
 | Time | Speaker | Production picture | Verbatim voiceover |
 | --- | --- | --- | --- |
-| **0:00–0:16** | Andres (A1) | Open on the genuine Production landing page, then the labeled synthetic project workflow. | One changed fact can invalidate work several steps away. A venue date moves, and suddenly speaker confirmation, catering, programme deadlines, travel, and briefing materials may all be stale. Small teams usually reconstruct that chain by hand. |
-| **0:16–0:33** | Andres (A2) | Hold on the evidence → impact → proposal → approval → history and undo workflow. | InOrdo makes the response reviewable. It preserves the evidence, separates source fact from inference, explains downstream impact, and keeps every proposed change inert until a person approves it. |
-| **0:33–0:54** | Andres (A3) | In the protected synthetic workspace, enter the canonical venue update and hold on the source/privacy notice. | This workspace and every name in it are synthetic. I insert one venue update: the hall is unavailable on September twelfth and offers September twenty-sixth instead. InOrdo preserves the exact source and warns us never to paste secrets or customer data. |
-| **0:54–1:18** | Deston (D1) | Show only the verified Production analysis state and its immutable evidence/candidate boundary. | On the server, GPT-5.6 has two bounded jobs: extract one structured candidate change, then draft recovery actions. Strict schemas and canonical-state checks validate identifiers, values, dates, and the exact evidence span. The model has no tools and cannot write a project record. |
-| **1:18–1:41** | Deston (D2) | Expand the real direct and indirect impact path and hold on its depths and full dependency path. | GPT never decides reach. Deterministic TypeScript follows explicit dependency edges, terminates cycles, keeps a stable shortest path, and labels depth one as direct and later steps as indirect. Every affected record is therefore explainable, not merely plausible. |
-| **1:41–2:04** | Andres (A4) | Review real recovery proposals, leave human-required work pending, select only the safe internal deadline update, and show the exact confirmation. | Recovery actions are proposals, not permission. I can review them individually, leave anything requiring human confirmation pending, and approve only the safe internal deadline change. The confirmation names exactly what will be applied. |
-| **2:04–2:28** | Deston (D3) | Apply the selected verified action, open ordered history, and show its linked compensating undo if the current state remains eligible. | Before applying anything, the server rechecks role, proposal state, selected action IDs, required human input, item versions, and idempotency. History records the actor and ordered before-and-after state. Undo never erases history; it creates a linked compensating operation only when current state still matches. |
-| **2:28–2:38** | Deston (D4) | Show sanitized public Codex evidence: public commits, CI/test evidence, or a purpose-built non-secret slide. | Codex accelerated our schema and RLS review, graph and model contracts, operation and undo tests, and release hardening—while preserving the rule that model output never mutates data directly. |
-| **2:38–2:47** | Andres (A5) | Briefly show the ordinary-project preview, then return to the InOrdo mark and workflow promise. | InOrdo's promise is simple: when evidence changes a project, every consequence stays visible, attributable, and safely under human control. |
+| **0:00.350–0:20.020** | Andres (A1) | Open on the team introduction and genuine Production landing page, then the labeled synthetic project workflow. | One changed fact can invalidate work several steps away. A venue date moves, and suddenly speaker confirmation, catering, programme deadlines, travel, and briefing materials may all be stale. Small teams usually reconstruct that chain by hand. |
+| **0:20.270–0:37.550** | Andres (A2) | Hold on the evidence → impact → proposal → approval → history and undo workflow. | InOrdo makes the response reviewable. It preserves the evidence, separates source fact from inference, explains downstream impact, and keeps every proposed change inert until a person approves it. |
+| **0:37.800–0:58.920** | Andres (A3) | In the protected synthetic workspace, enter the canonical venue update and hold on the source/privacy notice. | This workspace and every name in it are synthetic. I insert one venue update: the hall is unavailable on September twelfth and offers September twenty-sixth instead. InOrdo preserves the exact source and warns us never to paste secrets or customer data. |
+| **0:59.170–1:19.170** | Deston (D1) | Show only the verified Production analysis state and its immutable evidence/candidate boundary. | On the server, GPT-5.6 has two bounded jobs: extract one structured candidate change, then draft recovery actions. Strict schemas and canonical-state checks validate identifiers, values, dates, and the exact evidence span. The model has no tools and cannot write a project record. |
+| **1:19.420–1:38.410** | Deston (D2) | Expand the real direct and indirect impact path and hold on its depths and full dependency path. | GPT never decides reach. Deterministic TypeScript follows explicit dependency edges, terminates cycles, keeps a stable shortest path, and labels depth one as direct and later steps as indirect. Every affected record is therefore explainable, not merely plausible. |
+| **1:38.660–1:56.260** | Andres (A4) | Review real recovery proposals, leave the separate request-human-confirmation action pending, select only the safe internal date update, supply its required response, and show the exact confirmation. | Recovery actions are proposals, not permission. I can review them individually, leave anything requiring human confirmation pending, and approve only the safe internal deadline change. The confirmation names exactly what will be applied. |
+| **1:56.510–2:18.535** | Deston (D3) | Apply the selected verified action, open ordered history, and show its linked compensating undo if the current state remains eligible. | Before applying anything, the server rechecks role, proposal state, selected action IDs, required human input, item versions, and idempotency. History records the actor and ordered before-and-after state. Undo never erases history; it creates a linked compensating operation only when current state still matches. |
+| **2:18.785–2:31.014** | Deston (D4) | Show sanitized public Codex evidence: public commits and CI/test evidence. | The recording is authoritative; captions match its audible wording. The written pickup remains retained below for provenance. |
+| **2:31.264–2:43.414** | Andres (A5) | Briefly show the ordinary-project preview, then return to the InOrdo mark and workflow promise. | InOrdo's promise is simple: when evidence changes a project, every consequence stays visible, attributable, and safely under human control. |
+| **2:43.414–2:44.067** | — | Closing hold on the InOrdo promise. | — |
 
 ## No-retry 2:47 timeline
 
@@ -44,7 +49,9 @@ Use this branch only after the single attempt is classified as absent, failed, i
 | **1:41–2:04** | Andres (A4 unchanged) | Show genuine preserved synthetic proposal-review and confirmation UI. Keep human-required work pending; do not claim these proposals came from the failed attempt and do not apply anything for this recording. | `Preserved synthetic proposal state • Not a new paid result` | Use A4 verbatim from the verified-success timeline. |
 | **2:04–2:28** | Deston (D3 unchanged) | Show genuine preserved synthetic ordered operation history and the visible undo eligibility/compensating-operation relationship. Do not create a new operation or imply that this history came from the failed attempt. | `Preserved synthetic history • No action applied for this recording` | Use D3 verbatim from the verified-success timeline. |
 
-## Verified-success capture allocation
+## Original verified-success storyboard allocation
+
+This retained table describes the pre-recording 2:47 capture plan. The exact final timing above and the completed 2:44.067 export are authoritative for release.
 
 All capture files live outside Git under `C:\Users\User\Videos\InOrdo-Build-Week\01-screen-captures`:
 
@@ -62,12 +69,13 @@ For the no-retry branch, captures `03-gpt56-analysis.mp4`, `04-deterministic-imp
 
 ## Final truth and privacy check
 
-- [ ] Runtime is exactly 2:47 and the voiceover text matches the separate speaker masters verbatim.
-- [ ] Exactly one post-classification/post-revocation branch is selected; its D1, captures 03–05, and thumbnail badge all agree.
-- [ ] Deston's exact D4 pickup was timed before the Production session and is intelligible within 10 seconds without rushing. If it does not fit, recording is blocked pending specification-owner resolution; no wording or timing is changed silently.
-- [ ] Every interface frame is genuine Production behavior at 1920×1080 and 100% browser zoom.
-- [ ] The synthetic label is legible; no customer data, credential, account detail, browser profile, terminal, or private transcript appears.
-- [ ] Captions match the spoken words and do not cover evidence, dependency paths, approval state, or history.
-- [ ] The GPT-5.6 shot reflects the one verified Production result; if no result was verified, it is not represented as successful.
-- [ ] The recording key was revoked immediately after the playable raw capture was verified.
-- [ ] No `__e2e__` route, fabricated interface, or Higgsfield asset appears.
+- [x] Runtime is 2:44.067; every voice section remains at natural speed and captions match the audible recordings.
+- [x] The verified-success post-classification/post-revocation branch is selected; the no-retry branch is an unused contingency.
+- [x] The final render's D1, captures, and thumbnail badge agree with the verified-success branch.
+- [x] Deston's D4 is retained at its natural 12.229-second duration without rushing, time-stretching, or synthesis; non-spoken holds were tightened and the deviation from the planned 10-second slot is recorded explicitly.
+- [x] Every interface frame is a genuine public Production or public GitHub view inside a 1920×1080 editorial canvas; no fixture or generated interface appears.
+- [x] The synthetic label is legible; the reviewed frames contain no customer data, credential, account identifier, browser profile, terminal, or private transcript.
+- [x] Captions match the spoken recordings and do not cover the central evidence, dependency paths, approval state, or history.
+- [x] The captured GPT-5.6 shot reflects the one verified Production result.
+- [x] The fresh recording key was revoked after the playable raw capture was verified; the older duplicate key was also revoked, zero active InOrdo keys remained, the Vercel key was removed, and Production returned to disabled mode.
+- [x] No `__e2e__` route, fabricated interface, generative media, or Higgsfield asset appears.

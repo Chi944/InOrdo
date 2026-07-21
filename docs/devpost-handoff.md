@@ -2,19 +2,24 @@
 
 This document contains the non-secret judge testing body and the credential-safe release procedure. It intentionally contains no email, password, Auth UUID, session, token, project reference, or environment value.
 
+## Current handoff status
+
+- Andres is a confirmed Devpost team member.
+- Judge-only credentials and the verified-result testing instructions are saved privately in Devpost. The verified 2:44.067 review export and 1280×720 thumbnail are complete outside Git; the public video URL and primary Codex `/feedback` Session ID remain pending.
+
 ## Provisioning prerequisites
 
-Before entering anything in Devpost, complete `docs/demo-user-setup.md` and privately verify three distinct real identities:
+Release verification confirmed exactly three distinct real identities:
 
 - a real owner with `owner` membership who is the audited recording-grant issuer;
 - a recording operator with `admin` membership who is the grant's target actor; and
 - a dedicated judge with `viewer` membership.
 
-Verify the real owner's Auth profile and owner membership first. For each new Dashboard user, verify `public.profiles` before inserting `public.workspace_members`. Never use a fictional seed UUID as the grant issuer, never issue a grant to the judge, and never place an actual identifier or credential in Git or a terminal argument.
+Exactly one owner, one admin recording operator, and one viewer judge passed the role/profile checks. The owner issued the grant, the admin performed the recording, and the viewer received no grant. No actual identifier or credential is recorded in Git or a terminal argument.
 
 ## Private Devpost testing-instruction body
 
-Copy the following non-secret body into Devpost's private testing-instructions area. Before saving the final draft, replace the recording-outcome instruction line with exactly one allowlisted sentence from the next section.
+The following non-secret body and the separate judge-only credential were saved privately in Devpost. The verified-result sentence is selected; no credential value is reproduced here.
 
 ```text
 Production URL: https://inordo.vercel.app
@@ -22,7 +27,7 @@ Login: https://inordo.vercel.app/login
 
 This is a dedicated read-only viewer account for the fully synthetic “Regional Climate Action Summit 2026” workspace. You can open the project overview, items and item details, decisions, risks, dependencies, preserved source evidence, deterministic impact paths, recovery proposals, and operation history. You cannot analyze, create, edit, apply, undo, reset, or delete; those restrictions are enforced by server authorization and Supabase row-level security.
 
-Recording-outcome sentence: selected during the release plan. Use the verified-result sentence only after a successful persisted GPT-5.6 capture; otherwise state truthfully that no verified paid result was recorded. Live paid OpenAI analysis is unavailable to this judge account and cannot consume the team's API budget.
+The visible GPT-5.6 result is the verified persisted synthetic result captured for the final demo video. Live paid OpenAI analysis is disabled for this judge account and cannot consume the team's API budget.
 
 Suggested path: sign in → Projects → Regional Climate Action Summit 2026 → Items → Dependencies → latest impact review and proposal → Operation history → Projects → ordinary-project informational preview.
 
@@ -31,33 +36,33 @@ All names and project data are synthetic.
 
 ## Mutually exclusive recording-outcome variants
 
-Choose **exactly one**. These sentences are mutually exclusive and must never both appear in the saved Devpost draft.
+These sentences remain mutually exclusive. The verified-result variant is selected for this release; the no-verified-result variant is retained only as an unused contingency.
 
 ### Verified-result variant
 
-Use only after the release plan proves a successful, persisted GPT-5.6 capture and the demo video shows that same result:
+Selected after the release plan proved one successful, persisted GPT-5.6 Production capture:
 
 ```text
-The visible GPT-5.6 result is the same persisted synthetic result shown in the demo video. Live paid OpenAI analysis is unavailable to this judge account and cannot consume the team's API budget.
+The visible GPT-5.6 result is the verified persisted synthetic result captured for the final demo video. Live paid OpenAI analysis is disabled for this judge account and cannot consume the team's API budget.
 ```
 
 ### No-verified-result variant
 
-Use when no successful paid recording was persisted and verified:
+Unused contingency for a release in which no successful paid recording was persisted and verified:
 
 ```text
 No new paid GPT-5.6 result was verified for this release. Live paid OpenAI analysis is unavailable to this judge account and cannot consume the team's API budget; the judge can still inspect the synthetic records and non-model workflow evidence described here.
 ```
 
-The source-controlled release currently must not be changed to the verified-result variant without the release plan's recorded success evidence. Test fixtures, intercepted browser seams, provider readiness, or a failed provider request are not sufficient.
+The verified-result selection is supported by the single successful Production run and genuine persisted state. Test fixtures, intercepted browser seams, provider readiness, or the earlier failed request are not its evidence.
 
 ## Private credential entry
 
-The owner enters the actual judge email and password directly into Devpost's private credential fields at release time. Do not append credentials to the body above, store them in a repository file, paste them into a terminal command, or include them in screenshots, video, logs, issues, or public submission fields. Verify the private credential works in a fresh signed-out browser before submission.
+The owner saved the actual judge credential only in Devpost's private field. It was not appended to the body above, stored in a repository file, pasted into a terminal command, or included in screenshots, video, logs, issues, or public submission fields.
 
 ## Judge access contract
 
-The judge experience is read-only:
+Production QA confirmed that the judge experience is read-only:
 
 - allowed: sign in, navigate, filter, inspect project records and record details, read evidence, view deterministic paths, view proposals, and inspect operation history;
 - denied: analyze, create, edit, add/remove dependencies, apply, undo, reset, remove, and delete; and
