@@ -1,6 +1,6 @@
 # InOrdo Production capture and edit runbook
 
-This runbook creates one truthful 2:47 submission video from the public Production application. It does not authorize a provider request, deployment change, account operation, or publication. Raw media, edit projects, browser profiles, and credentials stay outside Git.
+This runbook records how the truthful under-three-minute submission video was produced from the public Production application. The original storyboard targeted 2:47; the verified-success review export runs 2:44.067 because the edit follows the natural recorded performances. It does not authorize another provider request, deployment change, account operation, or publication. Raw media, edit projects, browser profiles, and credentials stay outside Git.
 
 ## Fixed media workspace
 
@@ -23,7 +23,7 @@ Voice recordings are provided separately as:
 
 All voice masters are mono PCM WAV, 48 kHz, 24-bit, without clipping. Leave approximately two seconds between sections and record approximately five seconds of room tone per speaker.
 
-Before any Production capture, time Deston's exact D4 pickup. Its 29 words must be intelligible within 10 seconds without rushing. If the pickup fails, block the recording session and obtain specification-owner resolution; do not silently rewrite the text, time-stretch or speed the audio, or change the 2:28–2:38 slot.
+The written D4 pickup originally targeted 10 seconds. The supplied natural recording runs 12.229 seconds and local alignment indicates that its audible wording may omit one written word. The final edit widened the picture slot, tightened only non-spoken holds, captioned the audible recording, and used no time-stretch or synthesis. Any future replacement must be newly recorded by Deston; never reconstruct or speed the voice silently.
 
 ## Before the first take
 
@@ -56,7 +56,9 @@ First classify the single attempt, complete credential revocation, and verify th
 
 Never mix branches. The no-retry edit must not contain a successful-result crop, original D1, success badge, or any label suggesting that preserved synthetic state came from a new paid request.
 
-## Verified-success capture map
+## Original verified-success storyboard map
+
+This table is the pre-recording 2:47 picture plan retained for provenance. The exact 2:44.067 export timing is recorded in `docs/video-script.md` and is authoritative for the finished review file.
 
 | Timeline | Voice | Capture | Required picture |
 | --- | --- | --- | --- |
@@ -71,7 +73,7 @@ Never mix branches. The no-retry edit must not contain a successful-result crop,
 | 2:38–2:43 | A5 | `06-project-preview.mp4` | Ordinary-project preview and its truthful currently unavailable message. |
 | 2:43–2:47 | A5 | `01-landing-and-workflow.mp4` | InOrdo mark and final workflow promise. |
 
-## No-retry capture map
+## Unused no-retry contingency map
 
 Captures 01, 02, 06, and 07 retain all verified-success timings: capture 01 at 0:00–0:33 and 2:43–2:47, capture 02 at 0:33–0:54, capture 07 at 2:28–2:38, and capture 06 at 2:38–2:43. At 0:54, replace captures 03–05 completely with the following no-result plan. Every overlay below is an editorial label, not part of or a modification to the product interface.
 
@@ -102,7 +104,7 @@ The no-retry D1 must be spoken exactly:
 
 ## Export and review
 
-- Timeline duration: exactly 2:47.
+- Timeline duration: 2:44.067 (the original storyboard target was 2:47; the submission limit is under 3:00).
 - Canvas: 1920×1080, progressive, square pixels.
 - Export a high-quality H.264 MP4 with AAC audio suitable for YouTube; retain a high-bitrate review master outside Git.
 - Listen on headphones and speakers. Confirm speech is clear, neither voice clips, and transitions contain no abrupt room-tone changes.

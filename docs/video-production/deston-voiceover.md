@@ -36,4 +36,4 @@ Use this replacement instead of D1 only after the single attempt is unverified, 
 
 ### D4 timed-pickup gate
 
-D4 contains 29 words and must fit within 10 seconds. Before the Production session, record and time an intelligible exact-text pickup. If it cannot fit without rushing, stop: recording is blocked until the specification owner resolves the wording or timeline. Do not silently edit the approved text, speed the audio, or change its timing.
+The written D4 pickup contains 29 words and originally targeted 10 seconds. The supplied natural recording runs 12.229 seconds and local alignment indicates that its audible wording may omit one written word. The final edit treats the recording—not an invented reconstruction—as authoritative, captions only what is audible, and does not time-stretch or synthesize speech. Its picture slot was widened while non-spoken holds were tightened; the final runtime remains 2:44.067. Any future replacement must be a new human recording, never a silent text or speed edit.

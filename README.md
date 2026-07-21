@@ -18,9 +18,9 @@
 InOrdo gives a team one reviewable path from new evidence to a safe project response. It preserves the source, uses a bounded server-side model route for interpretation and drafting, computes dependency reach in deterministic TypeScript, and requires an authorized person to approve each internal action. Applied operations are attributable and reversible only when the recorded contract says they are.
 
 > [!IMPORTANT]
-> **The canonical deployment is [inordo.vercel.app](https://inordo.vercel.app).** Vercel project `chi944s-projects/inordo` publicly serves reviewed `main` commit [`dad6b33e8fe99ae134f6949a4c46e8311352691d`](https://github.com/Chi944/InOrdo-Hackathon/commit/dad6b33e8fe99ae134f6949a4c46e8311352691d) through production deployment `dpl_EwTWxyQ4j8F7P4Dk3wrh5whTP9RA`. Vercel Authentication remains enabled for Preview deployments only.
+> **The canonical deployment is [inordo.vercel.app](https://inordo.vercel.app).** It serves the release built by direct Vercel CLI deployment from a clean worktree at reviewed `main` commit [`4f54cc1eec37d49aa6b1da6e0dafbc6f7d738d03`](https://github.com/Chi944/InOrdo-Hackathon/commit/4f54cc1eec37d49aa6b1da6e0dafbc6f7d738d03). Post-recording Production deployment `dpl_BW4kvr2zMUNkwv46XEeMMFRJeisJ` is `READY` at immutable [inordo-caheq8v2h-chi944s-projects.vercel.app](https://inordo-caheq8v2h-chi944s-projects.vercel.app). Vercel Authentication remains enabled for Preview deployments only.
 >
-> The recorded public Production artifact still serves reviewed `main` SHA `dad6b33e8fe99ae134f6949a4c46e8311352691d`. Its original seven-name configuration, Supabase Auth URL, authenticated record/dependency/reset smoke, and contracted mutation RPCs are recorded evidence. One bounded production analysis reached the provider boundary and failed closed with `model_unavailable` because the OpenAI organization had no credits. This repository therefore does **not** claim a successful GPT-5.6 result, proposal apply, or undo. The current branch adds a fail-closed provider policy and judge experience that are not Production evidence until the release plan is completed.
+> Production is deliberately back in `ANALYSIS_MODE=disabled`; `/api/health` is `ready` with analysis disabled. Exactly one bounded GPT-5.6 Production run succeeded, and its genuine saved evidence, direct and indirect impact paths, recovery proposal, selected internal date action, explicit human response, successful apply, linked history, and compensating undo remain viewable. Before that run, an older duplicate active InOrdo provider key was discovered and revoked. After the playable capture, the fresh recording key was revoked, zero active InOrdo keys remained, the Vercel `OPENAI_API_KEY` was removed, and local `.env.recording.local` was deleted. New paid analysis is disabled.
 
 ## Product interface
 
@@ -249,7 +249,7 @@ Reset is restricted to an owner/admin, the exact configured synthetic project, a
 
 Native create/update item and create/remove dependency writes use four authorized, generation-fenced, idempotent RPCs. Migration `20260719140000_guard_project_record_mutations` was the **expand** phase: it added the private receipt ledger and RPCs while temporarily retaining legacy contributor DML. After the exact RPC artifact passed hosted create, update, dependency-add, dependency-remove, replay, and reset smoke tests, reviewed PR [#17](https://github.com/Chi944/InOrdo-Hackathon/pull/17) merged and the separately approved `20260720190000` **contract** migration was applied by itself.
 
-The linked ledger now has exact parity through `20260720190000`. The contract verifier proves legacy table and column write grants/policies are absent, member reads remain, direct DML is denied, all four RPCs succeed, exact retry deduplicates, and true nonmembers are rejected. Because the contract is forward-only, a pre-RPC deployment is no longer a valid rollback target. The authoritative containment and forward-recovery rules are in the [deployment runbook](docs/deployment-runbook.md) and [rollback plan](docs/rollback-plan.md).
+The linked ledger now has exact parity through `20260721100000_add_analysis_access_policy.sql`. That exact migration was applied only after a sanitized linked-target match, a second dry run, and the owner's exact approval; its SHA-256 is `0F4125F0897FE96A942889EF57C8A4CC186F730539597149EB98CABEA4939B1F`. Post-apply parity and linked database lint passed with no pending migration. The earlier contract verifier proves legacy table and column write grants/policies are absent, member reads remain, direct DML is denied, all four RPCs succeed, exact retry deduplicates, and true nonmembers are rejected. Because the migrations are forward-only, a pre-RPC deployment is no longer a valid rollback target. The authoritative containment and forward-recovery rules are in the [deployment runbook](docs/deployment-runbook.md) and [rollback plan](docs/rollback-plan.md).
 
 ### Repository map
 
@@ -304,11 +304,11 @@ Local Supabase verification starts with `npx --no-install supabase start` and ma
 
 | Area | Current evidence | Still required |
 | --- | --- | --- |
-| Application | Node 22 lint, typecheck, 400 unit/component tests across 58 files, two Chromium journeys, production build, audit, and whitespace checks passed; PRs #19 and #20 independently passed CI before merge. | Keep future changes behind their own review and gates. |
-| Database | Hosted migrations align through contract tail `20260720190000`; linked type parity, migration parity, error-level lint, direct-DML denial, four guarded RPCs, replay, member reads, and nonmember rejection passed. | Re-run the contract verifier after any future privilege or mutation-RPC change. |
-| OpenAI | All server configuration is present; one production request failed closed during extraction with safe `model_unavailable` metadata. | Fund the OpenAI API organization, then run exactly one synthetic retry and complete proposal/apply/history/undo evidence. |
-| Browser | Authenticated production native-mutation/reset smoke passed; local layouts passed at 375, 768, and 1440 pixels; the deployed skip link passed keyboard focus verification. | Complete a fresh login/session/logout matrix and the funded analysis-to-undo path. |
-| Deployment | Production `dpl_EwTWxyQ4j8F7P4Dk3wrh5whTP9RA` is `READY` at public [inordo.vercel.app](https://inordo.vercel.app), serves SHA `dad6b33e...`, and has all seven Production names. Preview remains protected. | Verify the final video, Devpost, and demo-access links signed out before submission. |
+| Application | The exact release SHA passed under Node 22.23.1/npm 10.9.8: lint, typecheck, 514 tests across 64 Vitest files, two Chromium journeys, the Next.js 16.2.10 production build, a zero-vulnerability production audit, and whitespace checks. | Keep future changes behind their own review and gates. |
+| Database | Hosted migrations have exact parity through `20260721100000`; the policy migration checksum, second dry run, exact approval, post-apply parity, empty pending set, and linked database lint are recorded. | Preserve parity and use a new reviewed forward migration for any correction. |
+| Provider safety | The recording deployment was `READY` with analysis `recording_configured`. One exact 14-minute grant authorized one successful GPT-5.6 Production run. Canonical-source and fresh-duplicate gates passed; post-capture verification found one claimed, consistent, expiry-valid grant. The older duplicate provider key and fresh recording key were revoked, zero active InOrdo keys remained, the Vercel key was removed, and Production returned to disabled mode. | Keep new paid analysis disabled; any future attempt requires an entirely new approved key/grant lifecycle. |
+| Browser | Exactly one owner, one admin recording operator, and one viewer judge were verified as three distinct real Auth identities. The sanitized operator journey captured genuine saved evidence, deterministic direct/indirect impact, recovery proposal, explicit human approval, apply, linked history, and compensating undo. Fresh isolated viewer QA covered signed-out redirect, login/session refresh, five routes at 375/768/1440, keyboard focus, reduced motion, no overflow, and disabled/absent mutation controls. | Verify the public YouTube URL after upload; keep broader automated-only announcement coverage labeled as such. |
+| Deployment | Post-recording Production `dpl_BW4kvr2zMUNkwv46XEeMMFRJeisJ` is `READY` at public [inordo.vercel.app](https://inordo.vercel.app), with health ready and analysis disabled. | Upload the verified 2:44.067 video to YouTube, add the video and feedback references, and complete final Devpost submission. |
 
 Vercel deployment is manual—there is no Git-connected automatic deploy. Production must use Node.js 22.x, a clean reviewed `main` equal to `origin/main`, correctly scoped environment names, and the canonical alias. Environment changes require redeployment. Supabase Auth allows the canonical production origin, documented local redirects, and the approved account-scoped Preview wildcard. Deston confirmed on July 20, 2026 that the current Vercel Hobby terms permit this hackathon demo; that project-owner confirmation is recorded as operational evidence, not legal advice.
 
@@ -340,12 +340,12 @@ The protected workspace also exposes `/app/projects`, `/app/items`, item detail,
 
 | Limitation | Practical effect |
 | --- | --- |
-| The OpenAI organization is unfunded. | The key and server path are configured, but the single production attempt failed closed; no successful GPT-5.6 result may be claimed yet. |
-| GPT-OSS fallback has a real cost boundary. | It uses a dedicated capped Vercel AI Gateway key; the quota may be exhausted and service is not guaranteed to remain free forever. |
+| New live analysis is deliberately disabled. | The verified saved GPT-5.6 result remains reviewable, but no usable InOrdo recording key or Production Gateway key is configured, so the deployed application cannot spend provider credit. A new result would require a new one-use recording gate. |
+| GPT-OSS fallback has a real cost boundary. | The route supports a dedicated capped Vercel AI Gateway key, but no Production Gateway key is currently configured; future quota may be exhausted and service is not guaranteed to remain free forever. |
 | Ordinary workspaces are informational only. | Project creation, invitations, switching, and provisioning are not implemented in this Build Week release. |
 | Judge access is intentionally read-only. | The viewer may inspect the synthetic workspace but cannot analyze, create, edit, apply, undo, reset, remove, or delete. |
 | Evidence input is text-only. | Typed/pasted updates, manual notes, meeting minutes, and summaries are available; files, CSV, URLs, voice, email, and connectors are not. |
-| Authenticated production QA is partial. | Native records, dependencies, rollback, and reset are proven; the funded analysis, proposal apply, history, and undo journey is not. |
+| Some accessibility evidence is layered. | Real Production passed the fresh isolated responsive, landmark/heading, keyboard-focus, reduced-motion, redirect/session, and viewer-control checks. Status announcements, dialog focus return, and non-color semantics remain supported by automated component/Playwright evidence rather than a second live provider run. |
 | Supabase leaked-password screening is unavailable on the current Free plan. | Keep the synthetic demo password unique, generated, out of source control, and rotate it if exposure is suspected. |
 | Undo is intentionally narrow. | Only an entirely reversible field-update operation with matching current after-state can be compensated. |
 | Analysis finalization takes whole-table `SHARE` locks on item/dependency tables. | Other-project writes may wait; P0 is bounded to a low-volume synthetic demo pending project-scoped coordination. |
@@ -398,18 +398,18 @@ Codex supported scoped implementation and review across the repository foundatio
 | --- | --- |
 | Track | OpenAI Build Week — **Work & Productivity** |
 | Repository | [github.com/Chi944/InOrdo-Hackathon](https://github.com/Chi944/InOrdo-Hackathon) |
-| Production application | [inordo.vercel.app](https://inordo.vercel.app) — public deployment `dpl_EwTWxyQ4j8F7P4Dk3wrh5whTP9RA`, SHA `dad6b33e8fe99ae134f6949a4c46e8311352691d`; Preview deployments remain protected |
-| Demo access | Follow the non-secret [judge handoff](docs/devpost-handoff.md); enter the actual viewer credential only in Devpost's private fields and never commit a password. |
+| Production application | [inordo.vercel.app](https://inordo.vercel.app) — public post-recording deployment `dpl_BW4kvr2zMUNkwv46XEeMMFRJeisJ`, released from clean reviewed SHA `4f54cc1eec37d49aa6b1da6e0dafbc6f7d738d03`; saved verified GPT-5.6 evidence is viewable, new analysis is disabled, and Preview deployments remain protected |
+| Demo access | The judge-only viewer credential and instructions are saved privately in Devpost; the repository retains only the non-secret [judge handoff](docs/devpost-handoff.md). |
 | Public video | `<PUBLIC_YOUTUBE_VIDEO_URL>` |
-| Devpost entry | `<DEVPOST_URL>` |
-| Team | `<TEAM_MEMBER_NAMES_AND_ROLES>` |
+| Devpost entry | [InOrdo on Devpost](https://devpost.com/software/chimera-i4oz8d) |
+| Team | Deston — Engineering, Data & AI Safety; Andres — Product Design & Experience. Andres is a confirmed Devpost team member. |
 | Primary Codex feedback Session ID | `<PRIMARY_FEEDBACK_SESSION_ID>` — run `/feedback`; never fabricate an ID or publish a private transcript |
 | Deadline | July 21, 2026 at 5:00 PM PDT / July 22, 2026 at 8:00 AM SGT, subject to final confirmation against the [official schedule](https://openai.devpost.com/details/dates) |
 
-Before submission, replace every angle-bracket placeholder, verify all public links signed out, reconcile claims with the exact submitted Git and Vercel artifacts, finish the operator-held live gates, and lock the repository/deployment after the deadline as required. The full owner-by-owner checklist is [`docs/submission-checklist.md`](docs/submission-checklist.md).
+Before submission, confirm photo/likeness and temporary-license attribution rights, upload and inspect the completed video on public YouTube, add its URL and the primary feedback Session ID, verify the final submission signed out, and lock the repository/deployment after the deadline as required. The full owner-by-owner checklist is [`docs/submission-checklist.md`](docs/submission-checklist.md).
 
 ## License
 
 InOrdo is available under the [MIT License](LICENSE), currently attributed to the **InOrdo Hackathon Team**.
 
-> **TODO before submission:** verify the temporary copyright holder and legal attribution with every team member.
+> **Team-rights gate before submission:** Deston and Andres must confirm the supplied photos/likenesses are authorized for the video and thumbnail and approve the temporary MIT attribution **InOrdo Hackathon Team**. If either requests exact legal-name attribution, update the license before final submission.

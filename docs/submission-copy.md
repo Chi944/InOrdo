@@ -4,10 +4,12 @@
 
 - **Track:** Work & Productivity
 - **Deployed application:** `https://inordo.vercel.app`
-- **Reviewed/deployed application SHA:** `dad6b33e8fe99ae134f6949a4c46e8311352691d`
+- **Reviewed/deployed application SHA:** `4f54cc1eec37d49aa6b1da6e0dafbc6f7d738d03` (direct Vercel CLI deployment; the clean-worktree record, not Vercel metadata, establishes this source identity)
+- **Production deployment:** `dpl_BW4kvr2zMUNkwv46XEeMMFRJeisJ` (`READY`); immutable URL: `https://inordo-caheq8v2h-chi944s-projects.vercel.app`; health ready with analysis disabled
 - **Public repository:** `https://github.com/Chi944/InOrdo-Hackathon`
 - **Public demo video:** `<PUBLIC_YOUTUBE_VIDEO_URL>`
-- **Devpost submission:** `<DEVPOST_URL>`
+- **Devpost project:** `https://devpost.com/software/chimera-i4oz8d` (public project page; hackathon finalization remains pending)
+- **Team:** Deston — Engineering, Data & AI Safety; Andres — Product Design & Experience
 - **Primary Codex `/feedback` Session ID:** `<PRIMARY_FEEDBACK_SESSION_ID>`
 
 ## One-line pitch
@@ -23,9 +25,12 @@ InOrdo helps small teams respond safely when new evidence changes a project. Its
 - The judge receives a dedicated `viewer` account through Devpost's private credential fields. It is read-only: judges can navigate and inspect saved synthetic records, evidence, deterministic paths, proposals, and operation history but cannot analyze or mutate data.
 - Available input is typed or pasted text: a project update, manual note, meeting minutes, or meeting summary. File upload, CSV import, URL fetching, voice, email, Slack, Teams, Google Drive, and other connectors are not implemented.
 - The synthetic summit is the only provisioned project. The ordinary-project route is an informational preview; ordinary project creation, invitations, switching, and provisioning are not implemented.
-- The reviewed recording path uses one exact GPT-5.6 grant. The optional fallback uses the open-weight GPT-OSS model through a separately capped Vercel AI Gateway; quota may be exhausted and Gateway service is not guaranteed to remain free forever.
+- The verified recording used exactly one 14-minute grant and one successful GPT-5.6 Production run. Canonical-source and fresh-duplicate gates passed, and post-capture verification found one claimed, consistent, expiry-valid grant.
 - A ChatGPT subscription cannot authenticate or fund API calls made by this external application. Live paid OpenAI analysis is unavailable to the judge account and cannot consume the team's API budget.
-- Final private testing instructions must use exactly one truthful recording-outcome sentence from `docs/devpost-handoff.md`; test fixtures and readiness checks are not a verified provider result.
+- Production is back in `ANALYSIS_MODE=disabled`; health is ready with analysis disabled. The older duplicate active InOrdo key and fresh recording key were revoked, zero active InOrdo keys remained, the Vercel `OPENAI_API_KEY` was removed, and local `.env.recording.local` was deleted. Migration parity is exact through applied migration `20260721100000` with no pending migration.
+- The verified-result sentence from `docs/devpost-handoff.md` is selected. Judge-only credentials and instructions are saved privately in Devpost; judge QA confirmed view access and denied or disabled provider and mutation controls.
+- Andres is a confirmed Devpost team member. The public video URL and primary Codex `/feedback` Session ID remain pending.
+- The verified-success 2:44.067 review export and 1280×720 thumbnail are complete outside Git. The edit includes a brief team introduction using the supplied photos, natural-speed human recordings, accurate burned-in captions, genuine Production/public GitHub views, and no generative media. D4 remains at its natural 12.229-second duration; non-spoken holds were tightened instead of altering a voice. The public YouTube URL remains pending.
 
 ## Detailed Devpost description
 
@@ -39,7 +44,7 @@ The reviewer can compare source fact with model inference, inspect a readable pa
 
 The Build Week fixture is the fictional **Regional Climate Action Summit 2026**: eight fictional team members, 24 active project records, and 26 explicit dependencies. Its source update moves the event from 12 September to 26 September 2026 because the venue is unavailable. All fixture data is synthetic and no connector is required.
 
-The implemented repository includes the protected workflow interface, strict analysis and operation routes, deterministic traversal, RLS-scoped storage, audit history, undo, and a named-fixture reset contract. Successful analysis finalization promotes only an eligible, fully linked proposal from `draft` to `ready`; its actions remain inert until explicit selection. Linked database checks, authenticated native-mutation/reset smoke, and automated tests cover these boundaries. One OpenAI request reached the provider and failed closed because the organization is unfunded, so no successful model result or complete analysis-to-undo journey is claimed.
+The implemented repository includes the protected workflow interface, strict analysis and operation routes, deterministic traversal, RLS-scoped storage, audit history, undo, and a named-fixture reset contract. Successful analysis finalization promotes only an eligible, fully linked proposal from `draft` to `ready`; its actions remain inert until explicit selection. One verified GPT-5.6 Production run preserved genuine source evidence, showed direct and indirect deterministic impact, and produced a recovery proposal. The operator selected one internal date action with an explicit human response; apply and compensating undo succeeded, and linked history remains. New paid analysis is disabled.
 
 ## Problem
 
@@ -47,7 +52,7 @@ New evidence can invalidate work several steps downstream. Small teams lose time
 
 ## Solution
 
-InOrdo preserves the update first, separates source fact from model interpretation, and derives impact from explicit project relationships. In an approved recording, GPT-5.6 drafts structured interpretation and recovery options; deterministic code owns reachability; a person owns approval. Applied internal changes are attributed and recorded, with compensating undo only when the operation is reversible and current state still matches the recorded result.
+InOrdo preserves the update first, separates source fact from model interpretation, and derives impact from explicit project relationships. In the verified recording, GPT-5.6 drafted structured interpretation and recovery options; deterministic code owned reachability; a person owned approval. The selected internal date change was attributed and recorded, then reversed through a linked compensating operation after the server rechecked eligibility.
 
 ## How GPT-5.6 is meaningfully integrated
 
@@ -72,7 +77,7 @@ A proposal is not permission. Each proposed action remains inert until an author
 - **Data and identity:** Supabase Postgres, Auth, row-level security, generated database types, immutable evidence, and append-only operation history.
 - **Model boundary:** server-only, mode-aware adapters for exact GPT-5.6 recording or capped Gateway GPT-OSS fallback, strict Zod-backed structured output, bounded context, no tools, and no direct mutation.
 - **Domain logic:** pure TypeScript dependency traversal plus server-side authorization, validation, approval, idempotency, operation, undo, and reset services.
-- **Quality:** Vitest and Testing Library for unit/component coverage, a guarded Playwright core-demo journey, ESLint, TypeScript, and production builds.
+- **Quality:** Vitest and Testing Library for unit/component coverage, two guarded Playwright Chromium journeys, ESLint, TypeScript, and production builds.
 
 ## How Codex accelerated the build
 
@@ -106,6 +111,7 @@ No private transcript is committed. The primary shareable evidence will be the S
 - Selective-operation, audit, compensating-undo, and history-preserving demo-reset contracts verified through linked rollback-wrapped database checks.
 - A responsive impact-review interface that distinguishes source fact, GPT inference, deterministic paths, and human approval state.
 - Automated coverage for authorization, validation, analysis orchestration, graph behavior, operations, and key interface interactions.
+- One verified Production journey from genuine saved evidence through direct/indirect impact and recovery proposal to explicit approval, successful apply, linked history, and compensating undo.
 
 ## Lessons learned
 
@@ -117,20 +123,20 @@ No private transcript is committed. The primary shareable evidence will be the S
 
 ## Future roadmap
 
-1. Complete the release plan's single authorized GPT-5.6 recording attempt or select the truthful no-verified-result path, then finish the authenticated browser, accessibility, approval, history, undo, and reset checks that apply.
+1. Upload the verified review export to public YouTube, add the returned URL and primary `/feedback` Session ID to Devpost, and complete the final signed-out video/submission check.
 2. Deepen the existing project-item, decision, risk, and dependency views against canonical server data.
 3. Add proposal correction/rejection flows, stronger operational monitoring, and authenticated end-to-end browser coverage.
 4. Explore optional integrations only after the standalone workflow is reliable; connectors, semantic retrieval, enterprise administration, and native mobile remain outside P0.
 
 ## Honest limitations
 
-- One production OpenAI request reached the provider and failed closed because the organization is unfunded; no successful GPT-5.6 result may be claimed and test fixtures must never be presented as live output.
+- Exactly one purpose-specific GPT-5.6 Production run succeeded and its saved synthetic result remains viewable. New paid analysis is disabled; test fixtures must never be presented as that live output.
 - The optional open-weight GPT-OSS fallback runs through a dedicated capped Vercel AI Gateway. Its quota can be exhausted, and it is not guaranteed to remain free forever.
 - A ChatGPT subscription cannot be used to pay for or authenticate this external application's API calls.
 - The judge account is read-only and cannot start analysis or mutate the workspace.
 - Available evidence input is typed/pasted updates, manual notes, meeting minutes, and meeting summaries. Files, CSV, URLs, voice, email, and connectors are unavailable.
 - Ordinary project provisioning is unavailable; the ordinary-project page is explicitly informational.
-- Authenticated native project-record, dependency, rollback, and reset smoke is verified; fresh incognito login/logout and the successful analysis-to-undo workflow are not.
+- The authenticated bounded analysis-to-proposal, one-action apply, linked-history, compensating-undo, and judge-viewer denial journeys are verified. Full deployed responsive/accessibility and final signed-out public-asset checks remain.
 - The guarded Chromium demo journey intercepts provider/database seams; it validates the real UI and public request contracts but is not live authentication, RLS, Supabase RPC, or OpenAI evidence.
 - Authenticated local responsive checks passed at 375 × 812, 768 × 1024, and 1440 × 1000 without horizontal overflow; they are not deployed accessibility evidence.
 - Undo supports only eligible reversible field-update operations and stops on stale versions or after-state mismatch.
